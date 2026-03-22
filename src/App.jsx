@@ -199,19 +199,18 @@ const impactCards = [
 
 const portfolioVideos = [
   {
-    hls: `${import.meta.env.BASE_URL}videos/v1/master.m3u8`,
+    hls: `${import.meta.env.BASE_URL}videos/v1.mp4`,
     fallback: `${import.meta.env.BASE_URL}videos/v1.mp4`,
   },
   {
-    hls: `${import.meta.env.BASE_URL}videos/v2/master.m3u8`,
+    hls: `${import.meta.env.BASE_URL}videos/v2.mp4`,
     fallback: `${import.meta.env.BASE_URL}videos/v2.mp4`,
   },
   {
-    hls: `${import.meta.env.BASE_URL}videos/v3/master.m3u8`,
+    hls: `${import.meta.env.BASE_URL}videos/v3.mp4`,
     fallback: `${import.meta.env.BASE_URL}videos/v3.mp4`,
   },
 ];
-
 function sectionBadge(icon, text, textColor = "text-white") {
   const Icon = icon;
   return (
