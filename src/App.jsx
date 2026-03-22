@@ -1,6 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
 import { motion } from "framer-motion";
-import Hls from "hls.js";
 import sanaLogo from "./assets/sana-logo.png";
 import voiceMp3 from "./assets/voice.mp3";
 import {
@@ -198,19 +197,11 @@ const impactCards = [
 ];
 
 const portfolioVideos = [
-  {
-    hls: `${import.meta.env.BASE_URL}videos/v1.mp4`,
-    fallback: `${import.meta.env.BASE_URL}videos/v1.mp4`,
-  },
-  {
-    hls: `${import.meta.env.BASE_URL}videos/v2.mp4`,
-    fallback: `${import.meta.env.BASE_URL}videos/v2.mp4`,
-  },
-  {
-    hls: `${import.meta.env.BASE_URL}videos/v3.mp4`,
-    fallback: `${import.meta.env.BASE_URL}videos/v3.mp4`,
-  },
+  `${import.meta.env.BASE_URL}videos/v1.mp4`,
+  `${import.meta.env.BASE_URL}videos/v2.mp4`,
+  `${import.meta.env.BASE_URL}videos/v3.mp4`,
 ];
+
 function sectionBadge(icon, text, textColor = "text-white") {
   const Icon = icon;
   return (
@@ -480,7 +471,10 @@ function HeroAudioPlayer() {
       if (animationFrameRef.current) {
         cancelAnimationFrame(animationFrameRef.current);
       }
-      if (audioContextRef.current && audioContextRef.current.state !== "closed") {
+      if (
+        audioContextRef.current &&
+        audioContextRef.current.state !== "closed"
+      ) {
         audioContextRef.current.close().catch(() => {});
       }
     };
@@ -686,13 +680,18 @@ function HeroAudioPlayer() {
 
 function StructuredCard({ icon: Icon, title, desc }) {
   return (
-    <motion.div whileHover={{ y: -8, scale: 1.01 }} className={`${gradientOuterCard} p-5`}>
+    <motion.div
+      whileHover={{ y: -8, scale: 1.01 }}
+      className={`${gradientOuterCard} p-5`}
+    >
       <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-l from-white/5 to-white/10 px-4 py-3">
           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10">
             <Icon className="h-5 w-5" style={{ color: ACCENT }} />
           </div>
-          <h3 className="text-lg font-bold leading-7 text-white sm:text-xl">{title}</h3>
+          <h3 className="text-lg font-bold leading-7 text-white sm:text-xl">
+            {title}
+          </h3>
         </div>
         <div className="mt-4 rounded-2xl border border-white/10 bg-[#081512]/55 px-4 py-5 text-base leading-8 text-white/78">
           {desc}
@@ -750,7 +749,6 @@ function ImpactCard({ icon: Icon, title, desc }) {
 
 function ProtectedHlsVideoCard({ video, index }) {
   const videoRef = useRef(null);
-  const hlsRef = useRef(null);
 
   const [isReady, setIsReady] = useState(false);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -762,31 +760,11 @@ function ProtectedHlsVideoCard({ video, index }) {
     const element = videoRef.current;
     if (!element) return;
 
-    let cancelled = false;
-
-    const cleanupHls = () => {
-      if (hlsRef.current) {
-        hlsRef.current.destroy();
-        hlsRef.current = null;
-      }
-    };
-
-    const fallbackToMp4 = () => {
-      cleanupHls();
-      if (element.src !== video.fallback) {
-        element.src = video.fallback;
-        element.load();
-      }
-      if (!cancelled) {
-        setIsReady(true);
-      }
-    };
-
     const onLoaded = () => {
-      if (cancelled) return;
       setDuration(element.duration || 0);
       setIsReady(true);
     };
+
     const onTimeUpdate = () => setCurrentTime(element.currentTime || 0);
     const onPlay = () => setIsPlaying(true);
     const onPause = () => setIsPlaying(false);
@@ -794,7 +772,9 @@ function ProtectedHlsVideoCard({ video, index }) {
       setIsPlaying(false);
       setCurrentTime(0);
     };
-    const onError = () => fallbackToMp4();
+
+    element.src = video;
+    element.load();
 
     element.addEventListener("loadedmetadata", onLoaded);
     element.addEventListener("loadeddata", onLoaded);
@@ -803,38 +783,8 @@ function ProtectedHlsVideoCard({ video, index }) {
     element.addEventListener("play", onPlay);
     element.addEventListener("pause", onPause);
     element.addEventListener("ended", onEnded);
-    element.addEventListener("error", onError);
-
-    if (Hls.isSupported()) {
-      const hls = new Hls({
-        enableWorker: true,
-        backBufferLength: 90,
-        lowLatencyMode: false,
-      });
-      hlsRef.current = hls;
-
-      hls.loadSource(video.hls);
-      hls.attachMedia(element);
-
-      hls.on(Hls.Events.MANIFEST_PARSED, () => {
-        if (!cancelled) setIsReady(true);
-      });
-
-      hls.on(Hls.Events.ERROR, (_, data) => {
-        if (data?.fatal) fallbackToMp4();
-      });
-    } else if (element.canPlayType("application/vnd.apple.mpegurl")) {
-      element.src = video.hls;
-      element.load();
-    } else {
-      element.src = video.fallback;
-      element.load();
-      setIsReady(true);
-    }
 
     return () => {
-      cancelled = true;
-      cleanupHls();
       element.removeEventListener("loadedmetadata", onLoaded);
       element.removeEventListener("loadeddata", onLoaded);
       element.removeEventListener("durationchange", onLoaded);
@@ -842,9 +792,8 @@ function ProtectedHlsVideoCard({ video, index }) {
       element.removeEventListener("play", onPlay);
       element.removeEventListener("pause", onPause);
       element.removeEventListener("ended", onEnded);
-      element.removeEventListener("error", onError);
     };
-  }, [video.fallback, video.hls]);
+  }, [video]);
 
   const progress = useMemo(
     () => (duration ? (currentTime / duration) * 100 : 0),
@@ -919,7 +868,7 @@ function ProtectedHlsVideoCard({ video, index }) {
         )}
 
         <div className="pointer-events-none absolute left-4 top-4 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-xs text-white/80 backdrop-blur-xl">
-          {isReady ? "جاهز للتشغيل" : "جارِ تجهيز البث"}
+          {isReady ? "جاهز للتشغيل" : "جارِ تحميل الفيديو"}
         </div>
       </div>
 
@@ -1160,7 +1109,11 @@ export default function QuranTranslationLandingPage() {
                 <motion.div
                   key={item.label}
                   animate={{ y: [0, -6, 0] }}
-                  transition={{ duration: 4 + i, repeat: Infinity, ease: "easeInOut" }}
+                  transition={{
+                    duration: 4 + i,
+                    repeat: Infinity,
+                    ease: "easeInOut",
+                  }}
                   className="rounded-3xl border border-white/10 bg-white/10 p-4 text-center backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.18)]"
                 >
                   <div className="text-2xl font-black" style={{ color: ACCENT }}>
@@ -1205,7 +1158,11 @@ export default function QuranTranslationLandingPage() {
                       <motion.div
                         key={idx}
                         animate={{ width: [`${w - 18}%`, `${w}%`, `${w - 10}%`] }}
-                        transition={{ duration: 3 + idx, repeat: Infinity, ease: "easeInOut" }}
+                        transition={{
+                          duration: 3 + idx,
+                          repeat: Infinity,
+                          ease: "easeInOut",
+                        }}
                         className="h-3 rounded-full bg-gradient-to-r from-emerald-200 via-yellow-100 to-emerald-300"
                       />
                     ))}
@@ -1308,9 +1265,13 @@ export default function QuranTranslationLandingPage() {
               <div className="grid gap-8 lg:grid-cols-2 lg:items-stretch">
                 <div className="rounded-[1.8rem] border border-white/10 bg-[#081512]/45 p-6">
                   <div className="h-full rounded-2xl border border-white/10 bg-white/5 p-5">
-                    <h2 className="text-3xl font-black sm:text-4xl">شراكة تنفيذية موثوقة</h2>
+                    <h2 className="text-3xl font-black sm:text-4xl">
+                      شراكة تنفيذية موثوقة
+                    </h2>
                     <p className="mt-5 text-lg leading-8 text-white/75">
-                      يُنفّذ مشروع <span className="font-bold text-white">قنوات سنا القرآنية</span> من قبل{" "}
+                      يُنفّذ مشروع{" "}
+                      <span className="font-bold text-white">قنوات سنا القرآنية</span>{" "}
+                      من قبل{" "}
                       <span className="font-bold" style={{ color: ACCENT }}>
                         الشركة السعودية الأردنية للبث الفضائي (جاسكو)
                       </span>{" "}
@@ -1348,9 +1309,12 @@ export default function QuranTranslationLandingPage() {
             className="mb-10 text-center"
           >
             {sectionBadge(Sparkles, "مميزات المنصة")}
-            <h2 className="mt-5 text-3xl font-black sm:text-5xl">سنا... بلاغ للعالمين</h2>
+            <h2 className="mt-5 text-3xl font-black sm:text-5xl">
+              سنا... بلاغ للعالمين
+            </h2>
             <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-white/70">
-              منصة قرآنية تستخدم أحدث الوسائل لإيصال معاني القرآن الكريم إلى العالمين، بأسلوب يجمع بين التأصيل الشرعي والتقنيات الحديثة.
+              منصة قرآنية تستخدم أحدث الوسائل لإيصال معاني القرآن الكريم إلى
+              العالمين، بأسلوب يجمع بين التأصيل الشرعي والتقنيات الحديثة.
             </p>
           </motion.div>
 
@@ -1409,13 +1373,14 @@ export default function QuranTranslationLandingPage() {
             {sectionBadge(Crown, "أعمالنا")}
             <h2 className="mt-5 text-3xl font-black sm:text-5xl">نماذج من أعمالنا</h2>
             <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-white/70">
-              تلاوات قرآنية عطرة وترجمة معاني آيات القرآن الكريم لمختلف لغات العالم - سنا... بلاغ للعالمين.
+              تلاوات قرآنية عطرة وترجمة معاني آيات القرآن الكريم لمختلف لغات
+              العالم - سنا... بلاغ للعالمين.
             </p>
           </motion.div>
 
           <div className="grid gap-6 lg:grid-cols-3">
             {portfolioVideos.map((video, i) => (
-              <ProtectedHlsVideoCard key={video.hls} video={video} index={i} />
+              <ProtectedHlsVideoCard key={video} video={video} index={i} />
             ))}
           </div>
         </section>
@@ -1429,9 +1394,12 @@ export default function QuranTranslationLandingPage() {
             className="mb-10 text-center"
           >
             {sectionBadge(Globe, "أثر المشروع")}
-            <h2 className="mt-5 text-3xl font-black sm:text-5xl">أثر المشروع وانتشاره حول العالم</h2>
+            <h2 className="mt-5 text-3xl font-black sm:text-5xl">
+              أثر المشروع وانتشاره حول العالم
+            </h2>
             <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-white/70">
-              رسالة قرآنية عالمية وفّرت ترجمات موثوقة، وقدّمت تجربة مؤثرة، وساهمت في وصول معاني القرآن الكريم إلى بيوت حول العالم.
+              رسالة قرآنية عالمية وفّرت ترجمات موثوقة، وقدّمت تجربة مؤثرة،
+              وساهمت في وصول معاني القرآن الكريم إلى بيوت حول العالم.
             </p>
           </motion.div>
 
@@ -1462,7 +1430,8 @@ export default function QuranTranslationLandingPage() {
             {sectionBadge(Users, "شركاء النجاح")}
             <h2 className="mt-5 text-3xl font-black sm:text-5xl">نجاحٌ صنعه التعاون</h2>
             <p className="mx-auto mt-4 max-w-3xl text-lg leading-8 text-white/70">
-              حقق المشروع نجاحه بفضل تعاون نخبة من الجهات المتميزة، من بينها الجهات الشرعية والإعلامية والإنتاجية والمتطوعون.
+              حقق المشروع نجاحه بفضل تعاون نخبة من الجهات المتميزة، من بينها
+              الجهات الشرعية والإعلامية والإنتاجية والمتطوعون.
             </p>
           </motion.div>
 
@@ -1499,11 +1468,14 @@ export default function QuranTranslationLandingPage() {
               </div>
 
               <p className="mx-auto mt-5 max-w-4xl text-lg leading-8 text-white/75">
-                سنا رسالة دعوية عالمية، ويسعدنا التواصل معكم واستقبال استفساراتكم ومقترحاتكم وشراكاتكم في أي وقت بأسلوب واضح ومباشر.
+                سنا رسالة دعوية عالمية، ويسعدنا التواصل معكم واستقبال
+                استفساراتكم ومقترحاتكم وشراكاتكم في أي وقت بأسلوب واضح ومباشر.
               </p>
             </div>
 
-            <div className={`mt-8 rounded-[2rem] p-6 md:p-8 ${gradientOuterCard}`}>
+            <div
+              className={`mt-8 rounded-[2rem] p-6 md:p-8 ${gradientOuterCard}`}
+            >
               <div className="rounded-[2rem] border border-white/10 bg-[#081512]/70 p-6">
                 <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-5">
                   <div className="mb-4 text-2xl font-bold">اتصل بنا</div>
@@ -1528,9 +1500,15 @@ export default function QuranTranslationLandingPage() {
         <footer className="pb-10 pt-4">
           <div className={`rounded-[2.2rem] px-6 py-8 lg:px-10 ${glass}`}>
             <div className="grid gap-8 lg:grid-cols-[1.2fr_0.8fr_1fr]">
-              <div className={`rounded-[1.8rem] border border-white/10 p-6 text-center ${INNER_GRADIENT}`}>
+              <div
+                className={`rounded-[1.8rem] border border-white/10 p-6 text-center ${INNER_GRADIENT}`}
+              >
                 <div className="mx-auto flex h-24 w-24 items-center justify-center rounded-full border border-white/15 bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.08)] backdrop-blur-xl">
-                  <img src={sanaLogo} alt="شعار سنا" className="h-16 w-16 object-contain" />
+                  <img
+                    src={sanaLogo}
+                    alt="شعار سنا"
+                    className="h-16 w-16 object-contain"
+                  />
                 </div>
 
                 <div className="mt-4">
@@ -1544,7 +1522,9 @@ export default function QuranTranslationLandingPage() {
                 </div>
 
                 <p className="mx-auto mt-4 max-w-xl rounded-[1.4rem] border border-white/10 bg-[rgba(38,67,57,0.55)] px-5 py-4 leading-8 text-white/78">
-                  قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات العالمية، في مشروع وقفي يجمع بين جمال العرض ودقة المعنى وروح الرسالة.
+                  قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات
+                  العالمية، في مشروع وقفي يجمع بين جمال العرض ودقة المعنى وروح
+                  الرسالة.
                 </p>
               </div>
 
@@ -1594,7 +1574,8 @@ export default function QuranTranslationLandingPage() {
 
                 <div className="rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
                   <p className="mb-4 text-sm leading-7 text-white/65">
-                    حمّل التطبيق وابدأ متابعة المحتوى القرآني بسهولة عبر المنصات الرسمية.
+                    حمّل التطبيق وابدأ متابعة المحتوى القرآني بسهولة عبر المنصات
+                    الرسمية.
                   </p>
 
                   <div className="grid gap-3 sm:grid-cols-2">
@@ -1624,7 +1605,9 @@ export default function QuranTranslationLandingPage() {
                         <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 text-white">
                           <AppStoreIcon />
                         </div>
-                        <span className="text-base font-bold text-white">App Store</span>
+                        <span className="text-base font-bold text-white">
+                          App Store
+                        </span>
                       </div>
                     </a>
                   </div>
