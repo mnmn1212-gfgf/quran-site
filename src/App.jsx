@@ -1067,7 +1067,7 @@ export default function QuranTranslationLandingPage() {
           </header>
 
           <section className="relative grid min-h-[auto] items-center gap-10 py-10 sm:gap-12 sm:py-14 lg:min-h-[84vh] lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
-            <div className="order-2 lg:order-1">
+            <div className="order-1 lg:order-1">
               <motion.div
                 custom={0}
                 initial="hidden"
@@ -1171,7 +1171,7 @@ export default function QuranTranslationLandingPage() {
               initial={{ opacity: 0, scale: 0.96, rotate: isMobile ? 0 : -2 }}
               animate={{ opacity: 1, scale: 1, rotate: 0 }}
               transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              className="order-1 relative lg:order-2"
+              className="order-2 relative lg:order-2"
             >
               <motion.div
                 animate={isMobile ? {} : { y: [0, -10, 0] }}
