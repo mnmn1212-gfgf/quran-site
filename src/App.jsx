@@ -980,7 +980,7 @@ export default function QuranTranslationLandingPage() {
     <LazyMotion features={domAnimation}>
       <div
         dir="rtl"
-        className="relative min-h-screen overflow-x-hidden bg-[#04120f] text-white"
+        className="relative min-h-screen overflow-hidden bg-transparent text-white">
       >
         <div
           className={
