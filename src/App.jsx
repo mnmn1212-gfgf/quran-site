@@ -698,7 +698,10 @@ function StructuredCard({ icon: Icon, title, desc, isMobile }) {
 
 function IdentityCard({ icon: Icon, title, text, large = false, isMobile }) {
   return (
-    <motion.div whileHover={isMobile ? {} : { y: -6, scale: 1.01 }} className={`${softCard} h-full p-4 sm:p-5`}>
+    <motion.div
+      whileHover={isMobile ? {} : { y: -6, scale: 1.01 }}
+      className={`${softCard} h-full p-4 sm:p-5`}
+    >
       <div className="h-full rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-l from-white/5 to-white/10 px-4 py-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10">
@@ -728,13 +731,18 @@ function IdentityCard({ icon: Icon, title, text, large = false, isMobile }) {
 
 function ImpactCard({ icon: Icon, title, desc, isMobile }) {
   return (
-    <motion.div whileHover={isMobile ? {} : { y: -6, scale: 1.01 }} className={`${softCard} h-full p-4 sm:p-5`}>
+    <motion.div
+      whileHover={isMobile ? {} : { y: -6, scale: 1.01 }}
+      className={`${softCard} h-full p-4 sm:p-5`}
+    >
       <div className="h-full rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-l from-white/5 to-white/10 px-4 py-3">
           <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10">
             <Icon className="h-5 w-5" style={{ color: ACCENT }} />
           </div>
-          <h3 className="text-base font-bold text-white sm:text-lg lg:text-xl">{title}</h3>
+          <h3 className="text-base font-bold text-white sm:text-lg lg:text-xl">
+            {title}
+          </h3>
         </div>
         <div className="mt-4 rounded-2xl border border-white/10 bg-[#081512]/55 px-4 py-4 text-sm leading-7 text-white/78 sm:text-base sm:leading-8">
           {desc}
@@ -980,15 +988,9 @@ export default function QuranTranslationLandingPage() {
     <LazyMotion features={domAnimation}>
       <div
         dir="rtl"
-        className="relative min-h-screen overflow-hidden bg-transparent text-white">
+        className="relative min-h-screen overflow-hidden bg-transparent text-white"
       >
-        <div
-          className={
-            isMobile
-              ? "absolute inset-0 bg-[linear-gradient(180deg,#020617_0%,#04120f_45%,#031b17_100%)]"
-              : "absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(250,204,21,0.14),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(34,197,94,0.14),transparent_24%),linear-gradient(180deg,#020617_0%,#04120f_40%,#031b17_100%)]"
-          }
-        />
+        <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(250,204,21,0.14),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(34,197,94,0.14),transparent_24%),linear-gradient(180deg,#020617_0%,#04120f_40%,#031b17_100%)]" />
 
         {!isMobile && (
           <>
