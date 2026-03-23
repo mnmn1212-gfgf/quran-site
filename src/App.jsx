@@ -1,5 +1,5 @@
 import React, { useEffect, useMemo, useRef, useState } from "react";
-import { motion } from "framer-motion";
+import { LazyMotion, domAnimation, motion } from "framer-motion";
 import sanaLogo from "./assets/sana-logo.png";
 import voiceMp3 from "./assets/voice.mp3";
 import {
@@ -44,26 +44,26 @@ const INNER_GRADIENT =
   "bg-[linear-gradient(135deg,rgba(10,28,24,0.92)_0%,rgba(14,36,31,0.86)_100%)]";
 
 const fadeUp = {
-  hidden: { opacity: 0, y: 24 },
+  hidden: { opacity: 0, y: 20 },
   show: (i = 0) => ({
     opacity: 1,
     y: 0,
-    transition: { duration: 0.75, delay: i * 0.08, ease: [0.22, 1, 0.36, 1] },
+    transition: { duration: 0.6, delay: i * 0.06, ease: [0.22, 1, 0.36, 1] },
   }),
 };
 
 const pulseGlow = {
-  opacity: [0.3, 0.65, 0.3],
-  scale: [1, 1.06, 1],
-  transition: { duration: 5, repeat: Infinity, ease: "easeInOut" },
+  opacity: [0.2, 0.45, 0.2],
+  scale: [1, 1.03, 1],
+  transition: { duration: 6, repeat: Infinity, ease: "easeInOut" },
 };
 
 const containerClass =
   "relative z-10 mx-auto w-full max-w-[1680px] px-4 sm:px-6 lg:px-10 xl:px-14";
 const glass =
-  "border border-white/10 bg-white/10 backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.18)]";
+  "border border-white/10 bg-white/10 md:backdrop-blur-xl backdrop-blur-sm shadow-[0_8px_22px_rgba(0,0,0,0.14)]";
 const softCard = `rounded-[2rem] ${glass}`;
-const gradientOuterCard = `rounded-[2rem] border border-white/10 ${OUTER_GRADIENT} backdrop-blur-2xl shadow-[0_12px_40px_rgba(0,0,0,0.18)]`;
+const gradientOuterCard = `rounded-[2rem] border border-white/10 ${OUTER_GRADIENT} md:backdrop-blur-xl backdrop-blur-sm shadow-[0_8px_22px_rgba(0,0,0,0.14)]`;
 
 const navItems = [
   { label: "من نحن", href: "#about" },
@@ -202,11 +202,24 @@ const portfolioVideos = [
   `${import.meta.env.BASE_URL}videos/v3.mp4`,
 ];
 
+function useIsMobile() {
+  const [isMobile, setIsMobile] = useState(false);
+
+  useEffect(() => {
+    const check = () => setIsMobile(window.innerWidth < 768);
+    check();
+    window.addEventListener("resize", check);
+    return () => window.removeEventListener("resize", check);
+  }, []);
+
+  return isMobile;
+}
+
 function sectionBadge(icon, text, textColor = "text-white") {
   const Icon = icon;
   return (
     <div
-      className={`inline-flex max-w-full items-center gap-3 rounded-full border border-white/10 bg-white/10 px-4 py-2.5 text-xs font-semibold ${textColor} backdrop-blur-xl shadow-[0_10px_35px_rgba(0,0,0,0.18)] sm:px-5 sm:py-3 sm:text-sm`}
+      className={`inline-flex max-w-full items-center gap-3 rounded-full border border-white/10 bg-white/10 px-4 py-2.5 text-xs font-semibold ${textColor} backdrop-blur-md shadow-[0_6px_18px_rgba(0,0,0,0.14)] sm:px-5 sm:py-3 sm:text-sm`}
     >
       <Icon className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
       <span className="truncate">{text}</span>
@@ -217,7 +230,7 @@ function sectionBadge(icon, text, textColor = "text-white") {
 function LargeSectionBadge({ icon: Icon, text }) {
   return (
     <div
-      className="inline-flex max-w-full items-center gap-3 rounded-full border border-white/10 bg-white/10 px-5 py-3 text-base font-bold backdrop-blur-xl shadow-[0_12px_40px_rgba(0,0,0,0.2)] sm:px-8 sm:py-4 sm:text-xl lg:text-2xl"
+      className="inline-flex max-w-full items-center gap-3 rounded-full border border-white/10 bg-white/10 px-5 py-3 text-base font-bold backdrop-blur-md shadow-[0_6px_18px_rgba(0,0,0,0.14)] sm:px-8 sm:py-4 sm:text-xl lg:text-2xl"
       style={{ color: ACCENT }}
     >
       <Icon className="h-5 w-5 shrink-0 sm:h-7 sm:w-7" style={{ color: ACCENT }} />
@@ -274,7 +287,7 @@ function formatTime(seconds) {
   return `${String(mins).padStart(2, "0")}:${String(secs).padStart(2, "0")}`;
 }
 
-function HeroAudioPlayer() {
+function HeroAudioPlayer({ isMobile }) {
   const audioRef = useRef(null);
   const blobUrlRef = useRef(null);
   const audioContextRef = useRef(null);
@@ -282,19 +295,18 @@ function HeroAudioPlayer() {
   const animationFrameRef = useRef(null);
   const previousBarsRef = useRef([]);
 
-  const BARS_COUNT = 64;
+  const BARS_COUNT = isMobile ? 24 : 48;
   const HALF_BARS = BARS_COUNT / 2;
-  const MIN_BAR_HEIGHT = 10;
-  const MAX_BAR_HEIGHT = 42;
+  const MIN_BAR_HEIGHT = isMobile ? 8 : 10;
+  const MAX_BAR_HEIGHT = isMobile ? 22 : 34;
 
   const idleBars = useMemo(() => {
     const half = Array.from({ length: HALF_BARS }, (_, i) => {
       const t = i / Math.max(1, HALF_BARS - 1);
-      return Math.round(12 + t * 4);
+      return Math.round((isMobile ? 9 : 12) + t * 3);
     });
-
     return [...half.slice().reverse(), ...half];
-  }, [HALF_BARS]);
+  }, [HALF_BARS, isMobile]);
 
   const [bars, setBars] = useState(idleBars);
   const [isPlaying, setIsPlaying] = useState(false);
@@ -375,6 +387,12 @@ function HeroAudioPlayer() {
   }, [idleBars]);
 
   useEffect(() => {
+    if (isMobile && !isPlaying) {
+      previousBarsRef.current = idleBars;
+      setBars(idleBars);
+      return;
+    }
+
     if (!isPlaying) {
       previousBarsRef.current = idleBars;
       setBars(idleBars);
@@ -414,11 +432,7 @@ function HeroAudioPlayer() {
         }
 
         const localEnergy = count ? localSum / count / 255 : 0;
-        const edgeBoost = 0.9 + (index / Math.max(1, HALF_BARS - 1)) * 0.18;
-
-        const mixedEnergy =
-          (localEnergy * 0.72 + globalEnergy * 0.28) * edgeBoost;
-
+        const mixedEnergy = localEnergy * 0.68 + globalEnergy * 0.32;
         const height =
           MIN_BAR_HEIGHT +
           mixedEnergy * (MAX_BAR_HEIGHT - MIN_BAR_HEIGHT);
@@ -426,28 +440,11 @@ function HeroAudioPlayer() {
         return clamp(height, MIN_BAR_HEIGHT, MAX_BAR_HEIGHT);
       });
 
-      const smoothedHalfBars = halfBars.map((value, index, arr) => {
-        const prev = arr[index - 1] ?? value;
-        const next = arr[index + 1] ?? value;
-        const prev2 = arr[index - 2] ?? prev;
-        const next2 = arr[index + 2] ?? next;
-
-        const smoothed =
-          value * 0.46 +
-          (prev + next) * 0.2 +
-          (prev2 + next2) * 0.07;
-
-        return clamp(smoothed, MIN_BAR_HEIGHT, MAX_BAR_HEIGHT);
-      });
-
-      const mirroredBars = [
-        ...smoothedHalfBars.slice().reverse(),
-        ...smoothedHalfBars,
-      ];
+      const mirroredBars = [...halfBars.slice().reverse(), ...halfBars];
 
       const animatedBars = mirroredBars.map((value, index) => {
         const previous = previousBarsRef.current[index] ?? idleBars[index];
-        return Math.round(previous * 0.45 + value * 0.55);
+        return Math.round(previous * 0.55 + value * 0.45);
       });
 
       previousBarsRef.current = animatedBars;
@@ -463,7 +460,7 @@ function HeroAudioPlayer() {
         animationFrameRef.current = null;
       }
     };
-  }, [HALF_BARS, MAX_BAR_HEIGHT, MIN_BAR_HEIGHT, idleBars, isPlaying]);
+  }, [HALF_BARS, MAX_BAR_HEIGHT, MIN_BAR_HEIGHT, idleBars, isPlaying, isMobile]);
 
   useEffect(() => {
     return () => {
@@ -489,8 +486,8 @@ function HeroAudioPlayer() {
     if (!audioContextRef.current) {
       const context = new AudioContextClass();
       const analyser = context.createAnalyser();
-      analyser.fftSize = 256;
-      analyser.smoothingTimeConstant = 0.9;
+      analyser.fftSize = 128;
+      analyser.smoothingTimeConstant = 0.92;
 
       const source = context.createMediaElementSource(audio);
       source.connect(analyser);
@@ -556,79 +553,79 @@ function HeroAudioPlayer() {
   };
 
   return (
-    <div className="mt-5 rounded-[1.45rem] border border-white/10 bg-[#081512]/60 p-3 sm:p-4">
+    <div className="mt-5 rounded-[1.35rem] border border-white/10 bg-[#081512]/55 p-3 sm:p-4">
       <audio
         ref={audioRef}
         preload="metadata"
         onContextMenu={(e) => e.preventDefault()}
       />
 
-      <div className="mb-4 flex h-16 items-end gap-[2px] overflow-hidden rounded-2xl border border-white/10 bg-black/10 px-2 py-3 sm:h-20 sm:gap-[3px]">
+      <div className="mb-4 flex h-14 items-end gap-[2px] overflow-hidden rounded-2xl border border-white/10 bg-black/10 px-2 py-3 sm:h-18">
         {bars.map((height, index) => (
           <motion.div
             key={index}
             animate={{ height }}
-            transition={{ duration: 0.14, ease: "easeOut" }}
+            transition={{ duration: isMobile ? 0.2 : 0.14, ease: "easeOut" }}
             className="flex-1 self-end rounded-full bg-gradient-to-t from-emerald-300 via-yellow-100 to-emerald-200 opacity-95"
             style={{ maxHeight: `${MAX_BAR_HEIGHT}px` }}
           />
         ))}
       </div>
 
-      <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="flex flex-wrap items-center gap-2">
         <button
           type="button"
           onClick={togglePlay}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
         >
           {isPlaying ? (
-            <Pause className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+            <Pause className="h-4 w-4" style={{ color: ACCENT }} />
           ) : (
-            <Play className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+            <Play className="h-4 w-4" style={{ color: ACCENT }} />
           )}
         </button>
 
         <button
           type="button"
           onClick={() => seekBy(-10)}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           aria-label="تأخير"
         >
-          <SkipBack className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+          <SkipBack className="h-4 w-4" style={{ color: ACCENT }} />
         </button>
 
         <button
           type="button"
           onClick={replay}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           aria-label="إعادة التشغيل"
         >
-          <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+          <RotateCcw className="h-4 w-4" style={{ color: ACCENT }} />
         </button>
 
         <button
           type="button"
           onClick={() => seekBy(10)}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           aria-label="تقديم"
         >
-          <SkipForward className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+          <SkipForward className="h-4 w-4" style={{ color: ACCENT }} />
         </button>
 
         <button
           type="button"
           onClick={toggleMute}
-          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+          className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
           aria-label="الصوت"
         >
           <Volume2
-            className={`h-4 w-4 sm:h-5 sm:w-5 ${muted ? "opacity-50" : ""}`}
+            className={`h-4 w-4 ${muted ? "opacity-50" : ""}`}
             style={{ color: ACCENT }}
           />
         </button>
 
-        <div className="min-w-[52px] text-xs text-white/75 sm:min-w-[62px] sm:text-sm">
+        <div className="min-w-[52px] text-xs text-white/75">
           {formatTime(currentTime)}
         </div>
 
@@ -655,36 +652,36 @@ function HeroAudioPlayer() {
         .audio-range::-moz-range-track { height: 8px; background: transparent; }
         .audio-range::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
-          margin-top: -4px;
+          width: 14px;
+          height: 14px;
+          margin-top: -3px;
           border-radius: 999px;
           border: 2px solid rgba(255,255,255,0.9);
           background: ${ACCENT};
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
         }
         .audio-range::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
           border: 2px solid rgba(255,255,255,0.9);
           border-radius: 999px;
           background: ${ACCENT};
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
         }
       `}</style>
     </div>
   );
 }
 
-function StructuredCard({ icon: Icon, title, desc }) {
+function StructuredCard({ icon: Icon, title, desc, isMobile }) {
   return (
     <motion.div
-      whileHover={{ y: -8, scale: 1.01 }}
+      whileHover={isMobile ? {} : { y: -6, scale: 1.01 }}
       className={`${gradientOuterCard} h-full p-4 sm:p-5`}
     >
-      <div className="h-full rounded-[1.6rem] border border-white/10 bg-white/5 p-4">
+      <div className="h-full rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-l from-white/5 to-white/10 px-4 py-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 sm:h-12 sm:w-12">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10">
             <Icon className="h-5 w-5" style={{ color: ACCENT }} />
           </div>
           <h3 className="text-base font-bold leading-7 text-white sm:text-lg lg:text-xl">
@@ -699,12 +696,12 @@ function StructuredCard({ icon: Icon, title, desc }) {
   );
 }
 
-function IdentityCard({ icon: Icon, title, text, large = false }) {
+function IdentityCard({ icon: Icon, title, text, large = false, isMobile }) {
   return (
-    <motion.div whileHover={{ y: -8, scale: 1.01 }} className={`${softCard} h-full p-4 sm:p-5`}>
-      <div className="h-full rounded-[1.6rem] border border-white/10 bg-white/5 p-4">
+    <motion.div whileHover={isMobile ? {} : { y: -6, scale: 1.01 }} className={`${softCard} h-full p-4 sm:p-5`}>
+      <div className="h-full rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-l from-white/5 to-white/10 px-4 py-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 sm:h-12 sm:w-12">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10">
             <Icon className="h-5 w-5" style={{ color: ACCENT }} />
           </div>
           <div
@@ -729,12 +726,12 @@ function IdentityCard({ icon: Icon, title, text, large = false }) {
   );
 }
 
-function ImpactCard({ icon: Icon, title, desc }) {
+function ImpactCard({ icon: Icon, title, desc, isMobile }) {
   return (
-    <motion.div whileHover={{ y: -8, scale: 1.01 }} className={`${softCard} h-full p-4 sm:p-5`}>
-      <div className="h-full rounded-[1.6rem] border border-white/10 bg-white/5 p-4">
+    <motion.div whileHover={isMobile ? {} : { y: -6, scale: 1.01 }} className={`${softCard} h-full p-4 sm:p-5`}>
+      <div className="h-full rounded-[1.5rem] border border-white/10 bg-white/5 p-4">
         <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-gradient-to-l from-white/5 to-white/10 px-4 py-3">
-          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 sm:h-12 sm:w-12">
+          <div className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10">
             <Icon className="h-5 w-5" style={{ color: ACCENT }} />
           </div>
           <h3 className="text-base font-bold text-white sm:text-lg lg:text-xl">{title}</h3>
@@ -747,7 +744,7 @@ function ImpactCard({ icon: Icon, title, desc }) {
   );
 }
 
-function ProtectedHlsVideoCard({ video, index }) {
+function ProtectedHlsVideoCard({ video, index, isMobile }) {
   const videoRef = useRef(null);
 
   const [isReady, setIsReady] = useState(false);
@@ -755,6 +752,7 @@ function ProtectedHlsVideoCard({ video, index }) {
   const [duration, setDuration] = useState(0);
   const [currentTime, setCurrentTime] = useState(0);
   const [muted, setMuted] = useState(false);
+  const [hasStartedLoading, setHasStartedLoading] = useState(false);
 
   useEffect(() => {
     const element = videoRef.current;
@@ -773,9 +771,6 @@ function ProtectedHlsVideoCard({ video, index }) {
       setCurrentTime(0);
     };
 
-    element.src = video;
-    element.load();
-
     element.addEventListener("loadedmetadata", onLoaded);
     element.addEventListener("loadeddata", onLoaded);
     element.addEventListener("durationchange", onLoaded);
@@ -793,7 +788,15 @@ function ProtectedHlsVideoCard({ video, index }) {
       element.removeEventListener("pause", onPause);
       element.removeEventListener("ended", onEnded);
     };
-  }, [video]);
+  }, []);
+
+  const ensureLoaded = () => {
+    const el = videoRef.current;
+    if (!el || hasStartedLoading) return;
+    el.src = video;
+    el.load();
+    setHasStartedLoading(true);
+  };
 
   const progress = useMemo(
     () => (duration ? (currentTime / duration) * 100 : 0),
@@ -803,6 +806,14 @@ function ProtectedHlsVideoCard({ video, index }) {
   const togglePlay = () => {
     const el = videoRef.current;
     if (!el) return;
+
+    if (!hasStartedLoading) {
+      ensureLoaded();
+      setTimeout(() => {
+        el.play().catch(() => {});
+      }, 80);
+      return;
+    }
 
     if (el.paused) {
       el.play().catch(() => {});
@@ -814,6 +825,7 @@ function ProtectedHlsVideoCard({ video, index }) {
   const replayVideo = () => {
     const el = videoRef.current;
     if (!el) return;
+    ensureLoaded();
     el.currentTime = 0;
     el.play().catch(() => {});
   };
@@ -836,19 +848,19 @@ function ProtectedHlsVideoCard({ video, index }) {
 
   return (
     <motion.div
-      initial={{ opacity: 0, y: 25 }}
+      initial={{ opacity: 0, y: isMobile ? 12 : 22 }}
       whileInView={{ opacity: 1, y: 0 }}
-      viewport={{ once: true, amount: 0.25 }}
-      transition={{ duration: 0.8, delay: index * 0.12 }}
-      whileHover={{ y: -8, scale: 1.01 }}
+      viewport={{ once: true, amount: 0.18 }}
+      transition={{ duration: 0.5, delay: isMobile ? 0 : index * 0.08 }}
+      whileHover={isMobile ? {} : { y: -6, scale: 1.01 }}
       className={`${softCard} p-3 sm:p-4`}
     >
-      <div className="relative overflow-hidden rounded-[1.5rem] border border-white/10 bg-black/30">
+      <div className="relative overflow-hidden rounded-[1.4rem] border border-white/10 bg-black/30">
         <video
           ref={videoRef}
           className="aspect-video w-full object-cover"
           playsInline
-          preload="metadata"
+          preload="none"
           controls={false}
           muted={muted}
           onContextMenu={(e) => e.preventDefault()}
@@ -858,30 +870,34 @@ function ProtectedHlsVideoCard({ video, index }) {
           <button
             type="button"
             onClick={togglePlay}
-            className="absolute inset-0 flex items-center justify-center bg-black/10 transition hover:bg-black/5"
+            className="absolute inset-0 flex items-center justify-center bg-black/15 transition hover:bg-black/10"
             aria-label="تشغيل الفيديو"
           >
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-xl shadow-[0_0_45px_rgba(16,185,129,0.18)] sm:h-20 sm:w-20">
-              <Play className="mr-1 h-7 w-7 text-white sm:h-8 sm:w-8" />
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-[0_0_22px_rgba(16,185,129,0.16)] sm:h-18 sm:w-18">
+              <Play className="mr-1 h-7 w-7 text-white" />
             </span>
           </button>
         )}
 
-        <div className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[11px] text-white/80 backdrop-blur-xl sm:left-4 sm:top-4 sm:text-xs">
-          {isReady ? "جاهز للتشغيل" : "جارِ تحميل الفيديو"}
+        <div className="pointer-events-none absolute left-3 top-3 rounded-full border border-white/10 bg-black/35 px-3 py-1 text-[11px] text-white/80 backdrop-blur-md">
+          {!hasStartedLoading
+            ? "اضغط للتشغيل"
+            : isReady
+            ? "جاهز للتشغيل"
+            : "جارِ تحميل الفيديو"}
         </div>
       </div>
 
-      <div className="mt-4 rounded-[1.4rem] border border-white/10 bg-[#081512]/60 p-3 sm:p-4">
-        <div className="flex flex-wrap items-center gap-2 sm:gap-3">
+      <div className="mt-4 rounded-[1.3rem] border border-white/10 bg-[#081512]/55 p-3 sm:p-4">
+        <div className="flex flex-wrap items-center gap-2">
           <button
             type="button"
             onClick={toggleMute}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
             aria-label="كتم الصوت أو تشغيله"
           >
             <Volume2
-              className={`h-4 w-4 sm:h-5 sm:w-5 ${muted ? "opacity-50" : ""}`}
+              className={`h-4 w-4 ${muted ? "opacity-50" : ""}`}
               style={{ color: ACCENT }}
             />
           </button>
@@ -889,26 +905,26 @@ function ProtectedHlsVideoCard({ video, index }) {
           <button
             type="button"
             onClick={replayVideo}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
             aria-label="إعادة التشغيل"
           >
-            <RotateCcw className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+            <RotateCcw className="h-4 w-4" style={{ color: ACCENT }} />
           </button>
 
           <button
             type="button"
             onClick={togglePlay}
-            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10 sm:h-11 sm:w-11"
+            className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 text-white transition hover:bg-white/10"
             aria-label={isPlaying ? "إيقاف مؤقت" : "تشغيل"}
           >
             {isPlaying ? (
-              <Pause className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+              <Pause className="h-4 w-4" style={{ color: ACCENT }} />
             ) : (
-              <Play className="h-4 w-4 sm:h-5 sm:w-5" style={{ color: ACCENT }} />
+              <Play className="h-4 w-4" style={{ color: ACCENT }} />
             )}
           </button>
 
-          <div className="min-w-[52px] text-xs text-white/75 sm:min-w-[62px] sm:text-sm">
+          <div className="min-w-[52px] text-xs text-white/75">
             {formatTime(currentTime)}
           </div>
 
@@ -935,21 +951,21 @@ function ProtectedHlsVideoCard({ video, index }) {
         .video-range::-moz-range-track { height: 8px; background: transparent; }
         .video-range::-webkit-slider-thumb {
           -webkit-appearance: none;
-          width: 16px;
-          height: 16px;
-          margin-top: -4px;
+          width: 14px;
+          height: 14px;
+          margin-top: -3px;
           border-radius: 999px;
           border: 2px solid rgba(255,255,255,0.9);
           background: ${ACCENT};
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
         }
         .video-range::-moz-range-thumb {
-          width: 16px;
-          height: 16px;
+          width: 14px;
+          height: 14px;
           border: 2px solid rgba(255,255,255,0.9);
           border-radius: 999px;
           background: ${ACCENT};
-          box-shadow: 0 0 0 4px rgba(255,255,255,0.08);
+          box-shadow: 0 0 0 3px rgba(255,255,255,0.08);
         }
       `}</style>
     </motion.div>
@@ -958,699 +974,725 @@ function ProtectedHlsVideoCard({ video, index }) {
 
 export default function QuranTranslationLandingPage() {
   const [menuOpen, setMenuOpen] = useState(false);
+  const isMobile = useIsMobile();
 
   return (
-    <div
-      dir="rtl"
-      className="relative min-h-screen overflow-x-hidden bg-[#04120f] text-white"
-    >
-      <div className="absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(250,204,21,0.14),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(34,197,94,0.14),transparent_24%),linear-gradient(180deg,#020617_0%,#04120f_40%,#031b17_100%)]" />
-      <motion.div
-        className="absolute -top-24 left-1/2 h-72 w-72 -translate-x-1/2 rounded-full bg-emerald-400/20 blur-3xl sm:h-96 sm:w-96"
-        animate={pulseGlow}
-      />
-      <div className="absolute inset-0 opacity-[0.10]">
-        <div className="h-full w-full bg-[linear-gradient(rgba(255,255,255,0.07)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.07)_1px,transparent_1px)] bg-[size:44px_44px]" />
-      </div>
+    <LazyMotion features={domAnimation}>
+      <div
+        dir="rtl"
+        className="relative min-h-screen overflow-x-hidden bg-[#04120f] text-white"
+      >
+        <div
+          className={
+            isMobile
+              ? "absolute inset-0 bg-[linear-gradient(180deg,#020617_0%,#04120f_45%,#031b17_100%)]"
+              : "absolute inset-0 bg-[radial-gradient(circle_at_top,rgba(16,185,129,0.18),transparent_30%),radial-gradient(circle_at_80%_20%,rgba(250,204,21,0.14),transparent_22%),radial-gradient(circle_at_20%_80%,rgba(34,197,94,0.14),transparent_24%),linear-gradient(180deg,#020617_0%,#04120f_40%,#031b17_100%)]"
+          }
+        />
 
-      <div className={containerClass}>
-        <header className="pt-4 sm:pt-6">
-          <motion.div
-            initial="hidden"
-            animate="show"
-            variants={fadeUp}
-            className={`mx-auto flex items-center justify-between gap-3 rounded-[1.6rem] px-3 py-3 sm:rounded-[2rem] sm:px-4 ${glass}`}
-          >
-            <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-              <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-yellow-100/20 bg-white/10 shadow-[0_0_30px_rgba(16,185,129,0.20)] sm:h-16 sm:w-16">
-                <img
-                  src={sanaLogo}
-                  alt="شعار قنوات سنا القرآنية"
-                  className="h-full w-full object-cover"
-                />
-              </div>
-              <div className="truncate text-sm font-bold tracking-wide sm:text-xl">
-                قنوات سنا القرآنية
-              </div>
+        {!isMobile && (
+          <>
+            <motion.div
+              className="absolute -top-24 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-emerald-400/16 blur-3xl"
+              animate={pulseGlow}
+            />
+            <div className="absolute inset-0 opacity-[0.06]">
+              <div className="h-full w-full bg-[linear-gradient(rgba(255,255,255,0.06)_1px,transparent_1px),linear-gradient(90deg,rgba(255,255,255,0.06)_1px,transparent_1px)] bg-[size:44px_44px]" />
             </div>
+          </>
+        )}
 
-            <nav className="hidden items-center gap-3 md:flex">
-              {navItems.map((item) => (
-                <a
-                  key={item.href}
-                  href={item.href}
-                  className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/85 transition hover:border-emerald-200/30 hover:bg-white/10 hover:text-emerald-100"
-                >
-                  {item.label}
-                </a>
-              ))}
-            </nav>
-
-            <button
-              type="button"
-              onClick={() => setMenuOpen((v) => !v)}
-              className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 md:hidden"
+        <div className={containerClass}>
+          <header className="pt-4 sm:pt-6">
+            <motion.div
+              initial="hidden"
+              animate="show"
+              variants={fadeUp}
+              className={`mx-auto flex items-center justify-between gap-3 rounded-[1.5rem] px-3 py-3 sm:rounded-[2rem] sm:px-4 ${glass}`}
             >
-              <Menu className="h-5 w-5" />
-            </button>
-          </motion.div>
+              <div className="flex min-w-0 items-center gap-3 sm:gap-4">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-yellow-100/20 bg-white/10 shadow-[0_0_16px_rgba(16,185,129,0.16)] sm:h-16 sm:w-16">
+                  <img
+                    src={sanaLogo}
+                    alt="شعار قنوات سنا القرآنية"
+                    className="h-full w-full object-cover"
+                    loading="eager"
+                    decoding="async"
+                  />
+                </div>
+                <div className="truncate text-sm font-bold tracking-wide sm:text-xl">
+                  قنوات سنا القرآنية
+                </div>
+              </div>
 
-          {menuOpen && (
-            <div className={`mt-3 rounded-[1.4rem] p-3 md:hidden sm:rounded-[1.6rem] sm:p-4 ${glass}`}>
-              <div className="grid gap-2">
+              <nav className="hidden items-center gap-3 md:flex">
                 {navItems.map((item) => (
                   <a
                     key={item.href}
                     href={item.href}
-                    onClick={() => setMenuOpen(false)}
-                    className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85 sm:text-base"
+                    className="rounded-full border border-white/10 bg-white/5 px-4 py-2 text-sm font-medium text-white/85 transition hover:border-emerald-200/30 hover:bg-white/10 hover:text-emerald-100"
                   >
                     {item.label}
                   </a>
                 ))}
+              </nav>
+
+              <button
+                type="button"
+                onClick={() => setMenuOpen((v) => !v)}
+                className="flex h-11 w-11 shrink-0 items-center justify-center rounded-2xl border border-white/10 bg-white/5 md:hidden"
+              >
+                <Menu className="h-5 w-5" />
+              </button>
+            </motion.div>
+
+            {menuOpen && (
+              <div className={`mt-3 rounded-[1.4rem] p-3 md:hidden sm:rounded-[1.6rem] sm:p-4 ${glass}`}>
+                <div className="grid gap-2">
+                  {navItems.map((item) => (
+                    <a
+                      key={item.href}
+                      href={item.href}
+                      onClick={() => setMenuOpen(false)}
+                      className="rounded-2xl border border-white/10 bg-white/5 px-4 py-3 text-sm text-white/85 sm:text-base"
+                    >
+                      {item.label}
+                    </a>
+                  ))}
+                </div>
               </div>
-            </div>
-          )}
-        </header>
+            )}
+          </header>
 
-        <section className="relative grid min-h-[auto] items-center gap-10 py-10 sm:gap-12 sm:py-14 lg:min-h-[88vh] lg:grid-cols-[1.05fr_0.95fr] lg:py-24">
-          <div className="order-2 lg:order-1">
-            <motion.div
-              custom={0}
-              initial="hidden"
-              animate="show"
-              variants={fadeUp}
-              className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-200/20 bg-white/10 px-4 py-2 text-xs backdrop-blur-xl sm:text-sm"
-              style={{ color: ACCENT }}
-            >
-              <Stars className="h-4 w-4" style={{ color: ACCENT }} />
-              <span>سنا...بلاغ للعالمين</span>
-            </motion.div>
-
-            <motion.h1
-              custom={1}
-              initial="hidden"
-              animate="show"
-              variants={fadeUp}
-              className="text-3xl font-black leading-[1.25] sm:text-5xl lg:text-7xl"
-            >
-              <span className="block bg-gradient-to-l from-[#F3E7B3] via-emerald-100 to-yellow-100 bg-clip-text text-transparent">
-                قنوات سنا القرآنية
-              </span>
-            </motion.h1>
-
-            <motion.p
-              custom={2}
-              initial="hidden"
-              animate="show"
-              variants={fadeUp}
-              className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8 lg:text-xl"
-            >
-              قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات العالمية - وقف لله تعالى.
-            </motion.p>
-
-            <motion.div
-              custom={3}
-              initial="hidden"
-              animate="show"
-              variants={fadeUp}
-              className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4"
-            >
-              <a
-                href="#features"
-                className="group inline-flex items-center justify-center gap-3 rounded-2xl border px-6 py-3.5 text-sm font-bold shadow-[0_10px_40px_rgba(8,8,32,0.35)] transition hover:scale-[1.02] sm:px-7 sm:py-4 sm:text-base"
-                style={{
-                  backgroundColor: CTA_DARK,
-                  borderColor: "rgba(243,231,179,0.18)",
-                  color: ACCENT,
-                }}
+          <section className="relative grid min-h-[auto] items-center gap-10 py-10 sm:gap-12 sm:py-14 lg:min-h-[84vh] lg:grid-cols-[1.05fr_0.95fr] lg:py-20">
+            <div className="order-2 lg:order-1">
+              <motion.div
+                custom={0}
+                initial="hidden"
+                animate="show"
+                variants={fadeUp}
+                className="mb-5 inline-flex items-center gap-2 rounded-full border border-yellow-200/20 bg-white/10 px-4 py-2 text-xs backdrop-blur-md sm:text-sm"
+                style={{ color: ACCENT }}
               >
-                <Sparkles
-                  className="h-5 w-5 transition group-hover:rotate-12"
-                  style={{ color: ACCENT }}
-                />
-                اكتشف المنصة
-              </a>
+                <Stars className="h-4 w-4" style={{ color: ACCENT }} />
+                <span>سنا...بلاغ للعالمين</span>
+              </motion.div>
 
-              <a
-                href="https://youtube.com/@san-ar-m5i?si=RpejWa62nYgs2LGQ"
-                target="_blank"
-                rel="noreferrer"
-                className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-2xl transition hover:bg-white/15 sm:px-7 sm:py-4 sm:text-base"
+              <motion.h1
+                custom={1}
+                initial="hidden"
+                animate="show"
+                variants={fadeUp}
+                className="text-3xl font-black leading-[1.25] sm:text-5xl lg:text-7xl"
               >
-                <Play className="h-5 w-5" />
-                زوروا قناتنا
-              </a>
-            </motion.div>
+                <span className="block bg-gradient-to-l from-[#F3E7B3] via-emerald-100 to-yellow-100 bg-clip-text text-transparent">
+                  قنوات سنا القرآنية
+                </span>
+              </motion.h1>
 
-            <motion.div
-              custom={4}
-              initial="hidden"
-              animate="show"
-              variants={fadeUp}
-              className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 lg:grid-cols-4"
-            >
-              {stats.map((item, i) => (
-                <motion.div
-                  key={item.label}
-                  animate={{ y: [0, -6, 0] }}
-                  transition={{
-                    duration: 4 + i,
-                    repeat: Infinity,
-                    ease: "easeInOut",
+              <motion.p
+                custom={2}
+                initial="hidden"
+                animate="show"
+                variants={fadeUp}
+                className="mt-5 max-w-2xl text-base leading-7 text-white/75 sm:text-lg sm:leading-8 lg:text-xl"
+              >
+                قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات العالمية - وقف لله تعالى.
+              </motion.p>
+
+              <motion.div
+                custom={3}
+                initial="hidden"
+                animate="show"
+                variants={fadeUp}
+                className="mt-8 flex flex-col gap-3 sm:mt-10 sm:flex-row sm:gap-4"
+              >
+                <a
+                  href="#features"
+                  className="group inline-flex items-center justify-center gap-3 rounded-2xl border px-6 py-3.5 text-sm font-bold shadow-[0_8px_20px_rgba(8,8,32,0.24)] transition hover:scale-[1.02] sm:px-7 sm:py-4 sm:text-base"
+                  style={{
+                    backgroundColor: CTA_DARK,
+                    borderColor: "rgba(243,231,179,0.18)",
+                    color: ACCENT,
                   }}
-                  className="rounded-3xl border border-white/10 bg-white/10 p-3 text-center backdrop-blur-2xl shadow-[0_10px_30px_rgba(0,0,0,0.18)] sm:p-4"
                 >
-                  <div className="text-xl font-black sm:text-2xl" style={{ color: ACCENT }}>
-                    {item.value}
-                  </div>
-                  <div className="mt-2 text-xs text-white/70 sm:text-sm">{item.label}</div>
-                </motion.div>
-              ))}
-            </motion.div>
-          </div>
+                  <Sparkles
+                    className="h-5 w-5 transition group-hover:rotate-12"
+                    style={{ color: ACCENT }}
+                  />
+                  اكتشف المنصة
+                </a>
 
-          <motion.div
-            initial={{ opacity: 0, scale: 0.9, rotate: -4 }}
-            animate={{ opacity: 1, scale: 1, rotate: 0 }}
-            transition={{ duration: 1.2, ease: [0.22, 1, 0.36, 1] }}
-            className="order-1 relative lg:order-2"
-          >
-            <motion.div
-              animate={{ y: [0, -14, 0] }}
-              transition={{ duration: 7, repeat: Infinity, ease: "easeInOut" }}
-              className={`relative mx-auto max-w-2xl p-3 sm:p-4 ${softCard}`}
-            >
-              <div className="rounded-[1.7rem] border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-4 sm:p-6">
-                <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
-                  <div>
-                    <p className="text-xs text-white/60 sm:text-sm">اللغة الحالية</p>
-                    <h3 className="mt-1 text-xl font-bold sm:text-2xl">
-                      القرآن باللغة العربية
-                    </h3>
-                  </div>
-                  <div className="w-fit rounded-2xl border border-emerald-300/20 bg-emerald-400/15 px-4 py-2 text-xs text-emerald-100 sm:text-sm">
-                    بث مباشر
-                  </div>
-                </div>
+                <a
+                  href="https://youtube.com/@san-ar-m5i?si=RpejWa62nYgs2LGQ"
+                  target="_blank"
+                  rel="noreferrer"
+                  className="inline-flex items-center justify-center gap-3 rounded-2xl border border-white/15 bg-white/10 px-6 py-3.5 text-sm font-semibold text-white backdrop-blur-md transition hover:bg-white/15 sm:px-7 sm:py-4 sm:text-base"
+                >
+                  <Play className="h-5 w-5" />
+                  زوروا قناتنا
+                </a>
+              </motion.div>
 
-                <div className="mt-6 rounded-[1.5rem] border border-white/10 bg-[#0b1d19]/70 p-4 sm:mt-8 sm:p-6">
-                  <div className="mb-4 flex items-start gap-3 text-sm text-white/80 sm:items-center sm:text-base">
-                    <Headphones className="mt-0.5 h-5 w-5 shrink-0 text-emerald-200 sm:mt-0" />
-                    <span>استمع إلى التلاوة مع عرض بصري لمعاني القرآن الكريم</span>
-                  </div>
-
-                  <div className="space-y-3">
-                    {[65, 88, 42].map((w, idx) => (
-                      <motion.div
-                        key={idx}
-                        animate={{ width: [`${w - 18}%`, `${w}%`, `${w - 10}%`] }}
-                        transition={{
-                          duration: 3 + idx,
-                          repeat: Infinity,
-                          ease: "easeInOut",
-                        }}
-                        className="h-3 rounded-full bg-gradient-to-r from-emerald-200 via-yellow-100 to-emerald-300"
-                      />
-                    ))}
-                  </div>
-
-                  <div className="mt-6 grid grid-cols-3 gap-2 text-center sm:mt-8 sm:gap-3">
-                    {heroCards.map((item) => (
-                      <div
-                        key={item.label}
-                        className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4"
-                      >
-                        <div className="text-sm font-bold sm:text-lg" style={{ color: ACCENT }}>
-                          {item.value}
-                        </div>
-                        <div className="mt-1 text-[11px] text-white/60 sm:text-xs">
-                          {item.label}
-                        </div>
-                      </div>
-                    ))}
-                  </div>
-
-                  <HeroAudioPlayer />
-                </div>
-              </div>
-            </motion.div>
-
-            <div className="mx-auto mt-5 grid max-w-2xl gap-3 sm:mt-6 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
-              {heroBadges.map((item) => {
-                const Icon = item.icon;
-                return (
-                  <div
-                    key={item.title}
-                    className="w-full rounded-[1.4rem] border border-white/10 bg-white/10 px-5 py-4 text-center backdrop-blur-2xl shadow-[0_8px_30px_rgba(0,0,0,0.25)] sm:min-w-[220px] sm:w-auto sm:rounded-[1.6rem]"
+              <motion.div
+                custom={4}
+                initial="hidden"
+                animate="show"
+                variants={fadeUp}
+                className="mt-8 grid grid-cols-2 gap-3 sm:mt-12 sm:gap-4 lg:grid-cols-4"
+              >
+                {stats.map((item, i) => (
+                  <motion.div
+                    key={item.label}
+                    animate={isMobile ? {} : { y: [0, -4, 0] }}
+                    transition={
+                      isMobile
+                        ? {}
+                        : {
+                            duration: 4 + i,
+                            repeat: Infinity,
+                            ease: "easeInOut",
+                          }
+                    }
+                    className="rounded-3xl border border-white/10 bg-white/10 p-3 text-center backdrop-blur-md shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:p-4"
                   >
-                    <div className="flex items-center justify-center gap-3">
-                      <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 sm:h-11 sm:w-11">
-                        <Icon className="h-5 w-5" style={{ color: ACCENT }} />
-                      </div>
-                      <div className="text-sm font-bold text-white sm:text-base">{item.title}</div>
+                    <div className="text-xl font-black sm:text-2xl" style={{ color: ACCENT }}>
+                      {item.value}
+                    </div>
+                    <div className="mt-2 text-xs text-white/70 sm:text-sm">{item.label}</div>
+                  </motion.div>
+                ))}
+              </motion.div>
+            </div>
+
+            <motion.div
+              initial={{ opacity: 0, scale: 0.96, rotate: isMobile ? 0 : -2 }}
+              animate={{ opacity: 1, scale: 1, rotate: 0 }}
+              transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
+              className="order-1 relative lg:order-2"
+            >
+              <motion.div
+                animate={isMobile ? {} : { y: [0, -10, 0] }}
+                transition={isMobile ? {} : { duration: 7, repeat: Infinity, ease: "easeInOut" }}
+                className={`relative mx-auto max-w-2xl p-3 sm:p-4 ${softCard}`}
+              >
+                <div className="rounded-[1.6rem] border border-white/10 bg-gradient-to-br from-white/10 to-white/5 p-4 sm:p-6">
+                  <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
+                    <div>
+                      <p className="text-xs text-white/60 sm:text-sm">اللغة الحالية</p>
+                      <h3 className="mt-1 text-xl font-bold sm:text-2xl">
+                        القرآن باللغة العربية
+                      </h3>
+                    </div>
+                    <div className="w-fit rounded-2xl border border-emerald-300/20 bg-emerald-400/15 px-4 py-2 text-xs text-emerald-100 sm:text-sm">
+                      بث مباشر
                     </div>
                   </div>
-                );
-              })}
+
+                  <div className="mt-6 rounded-[1.4rem] border border-white/10 bg-[#0b1d19]/70 p-4 sm:mt-8 sm:p-6">
+                    <div className="mb-4 flex items-start gap-3 text-sm text-white/80 sm:items-center sm:text-base">
+                      <Headphones className="mt-0.5 h-5 w-5 shrink-0 text-emerald-200 sm:mt-0" />
+                      <span>استمع إلى التلاوة مع عرض بصري لمعاني القرآن الكريم</span>
+                    </div>
+
+                    {!isMobile && (
+                      <div className="space-y-3">
+                        {[65, 88, 42].map((w, idx) => (
+                          <motion.div
+                            key={idx}
+                            animate={{ width: [`${w - 14}%`, `${w}%`, `${w - 8}%`] }}
+                            transition={{
+                              duration: 3 + idx,
+                              repeat: Infinity,
+                              ease: "easeInOut",
+                            }}
+                            className="h-3 rounded-full bg-gradient-to-r from-emerald-200 via-yellow-100 to-emerald-300"
+                          />
+                        ))}
+                      </div>
+                    )}
+
+                    <div className="mt-6 grid grid-cols-3 gap-2 text-center sm:mt-8 sm:gap-3">
+                      {heroCards.map((item) => (
+                        <div
+                          key={item.label}
+                          className="rounded-2xl border border-white/10 bg-white/5 p-3 sm:p-4"
+                        >
+                          <div className="text-sm font-bold sm:text-lg" style={{ color: ACCENT }}>
+                            {item.value}
+                          </div>
+                          <div className="mt-1 text-[11px] text-white/60 sm:text-xs">
+                            {item.label}
+                          </div>
+                        </div>
+                      ))}
+                    </div>
+
+                    <HeroAudioPlayer isMobile={isMobile} />
+                  </div>
+                </div>
+              </motion.div>
+
+              <div className="mx-auto mt-5 grid max-w-2xl gap-3 sm:mt-6 sm:flex sm:flex-wrap sm:items-center sm:justify-center sm:gap-4">
+                {heroBadges.map((item) => {
+                  const Icon = item.icon;
+                  return (
+                    <div
+                      key={item.title}
+                      className="w-full rounded-[1.4rem] border border-white/10 bg-white/10 px-5 py-4 text-center backdrop-blur-md shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:min-w-[220px] sm:w-auto sm:rounded-[1.6rem]"
+                    >
+                      <div className="flex items-center justify-center gap-3">
+                        <div className="flex h-10 w-10 items-center justify-center rounded-2xl border border-white/10 bg-white/5 sm:h-11 sm:w-11">
+                          <Icon className="h-5 w-5" style={{ color: ACCENT }} />
+                        </div>
+                        <div className="text-sm font-bold text-white sm:text-base">{item.title}</div>
+                      </div>
+                    </div>
+                  );
+                })}
+              </div>
+            </motion.div>
+          </section>
+
+          <section id="about" className="py-4 lg:py-8">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.16 }}
+              variants={fadeUp}
+              className="mb-8 text-center"
+            >
+              <LargeSectionBadge icon={BookOpen} text="هوية قرآنية عالمية" />
+            </motion.div>
+
+            <div className="space-y-6">
+              <motion.div
+                initial="hidden"
+                whileInView="show"
+                viewport={{ once: true, amount: 0.16 }}
+                custom={0}
+                variants={fadeUp}
+              >
+                <IdentityCard {...identityCards[0]} large isMobile={isMobile} />
+              </motion.div>
+
+              <div className="grid gap-6 lg:grid-cols-2">
+                {identityCards.slice(1).map((card, i) => (
+                  <motion.div
+                    key={card.title}
+                    initial="hidden"
+                    whileInView="show"
+                    viewport={{ once: true, amount: 0.16 }}
+                    custom={i + 1}
+                    variants={fadeUp}
+                  >
+                    <IdentityCard {...card} isMobile={isMobile} />
+                  </motion.div>
+                ))}
+              </div>
             </div>
-          </motion.div>
-        </section>
+          </section>
 
-        <section id="about" className="py-4 lg:py-8">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            className="mb-8 text-center"
-          >
-            <LargeSectionBadge icon={BookOpen} text="هوية قرآنية عالمية" />
-          </motion.div>
+          <section className="py-8 lg:py-12">
+            <div className="mb-6 text-center">
+              <LargeSectionBadge icon={Building2} text="التنفيذ والإشراف" />
+            </div>
 
-          <div className="space-y-6">
             <motion.div
               initial="hidden"
               whileInView="show"
               viewport={{ once: true, amount: 0.2 }}
-              custom={0}
               variants={fadeUp}
+              className={`relative overflow-hidden p-5 sm:p-6 md:p-10 ${gradientOuterCard}`}
             >
-              <IdentityCard {...identityCards[0]} large />
+              {!isMobile && (
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.12),transparent_28%),radial-gradient(circle_at_80%_80%,rgba(250,204,21,0.10),transparent_32%)]" />
+              )}
+
+              <div className="relative z-10">
+                <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch lg:gap-8">
+                  <div className="rounded-[1.8rem] border border-white/10 bg-[#081512]/45 p-4 sm:p-6">
+                    <div className="h-full rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                      <h2 className="text-2xl font-black sm:text-3xl lg:text-4xl">
+                        شراكة تنفيذية موثوقة
+                      </h2>
+                      <p className="mt-5 text-base leading-8 text-white/75 sm:text-lg">
+                        يُنفّذ مشروع{" "}
+                        <span className="font-bold text-white">قنوات سنا القرآنية</span>{" "}
+                        من قبل{" "}
+                        <span className="font-bold" style={{ color: ACCENT }}>
+                          الشركة السعودية الأردنية للبث الفضائي (جاسكو)
+                        </span>{" "}
+                        – عمّان، الأردن، بخبرة رائدة في مجال الإنتاج والبث الإعلامي.
+                      </p>
+                    </div>
+                  </div>
+
+                  <div className="rounded-[1.8rem] border border-white/10 bg-[#081512]/70 p-4 sm:p-6">
+                    <div className="flex h-full flex-col justify-center rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
+                      <div className="text-sm text-white/60">الموقع الرسمي</div>
+                      <div className="mt-2 text-xl font-bold sm:text-2xl">Jasco Media City</div>
+                      <a
+                        href="https://jascomediacity.net/"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-5 inline-flex w-fit items-center gap-2 rounded-2xl border border-emerald-200/20 bg-emerald-400/10 px-5 py-3 text-sm text-emerald-100 transition hover:bg-emerald-400/20 sm:text-base"
+                      >
+                        قم بزيارة موقع Jasco
+                        <ExternalLink className="h-4 w-4" />
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </section>
+
+          <section id="features" className="py-12 lg:py-20">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.16 }}
+              variants={fadeUp}
+              className="mb-10 text-center"
+            >
+              {sectionBadge(Sparkles, "مميزات المنصة")}
+              <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">
+                سنا... بلاغ للعالمين
+              </h2>
+              <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
+                منصة قرآنية تستخدم أحدث الوسائل لإيصال معاني القرآن الكريم إلى
+                العالمين، بأسلوب يجمع بين التأصيل الشرعي والتقنيات الحديثة.
+              </p>
             </motion.div>
 
-            <div className="grid gap-6 lg:grid-cols-2">
-              {identityCards.slice(1).map((card, i) => (
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {features.map((item, i) => (
                 <motion.div
-                  key={card.title}
+                  key={item.title}
                   initial="hidden"
                   whileInView="show"
                   viewport={{ once: true, amount: 0.2 }}
-                  custom={i + 1}
+                  custom={i}
                   variants={fadeUp}
+                  className="h-full"
                 >
-                  <IdentityCard {...card} />
+                  <StructuredCard {...item} isMobile={isMobile} />
                 </motion.div>
               ))}
             </div>
-          </div>
-        </section>
+          </section>
 
-        <section className="py-8 lg:py-12">
-          <div className="mb-6 text-center">
-            <LargeSectionBadge icon={Building2} text="التنفيذ والإشراف" />
-          </div>
+          <section className="py-10 lg:py-14">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.16 }}
+              variants={fadeUp}
+              className="mb-10 text-center"
+            >
+              {sectionBadge(Send, "وسائل النشر والوصول")}
+              <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">قنوات حضور متعددة</h2>
+            </motion.div>
 
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.25 }}
-            variants={fadeUp}
-            className={`relative overflow-hidden p-5 sm:p-6 md:p-10 ${gradientOuterCard}`}
-          >
-            <div className="absolute inset-0 bg-[radial-gradient(circle_at_20%_20%,rgba(16,185,129,0.16),transparent_28%),radial-gradient(circle_at_80%_80%,rgba(250,204,21,0.12),transparent_32%)]" />
+            <div className="grid gap-5 lg:grid-cols-3">
+              {channels.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.2 }}
+                  custom={i}
+                  variants={fadeUp}
+                  className="h-full"
+                >
+                  <StructuredCard {...item} isMobile={isMobile} />
+                </motion.div>
+              ))}
+            </div>
+          </section>
 
-            <div className="relative z-10">
-              <div className="grid gap-6 lg:grid-cols-2 lg:items-stretch lg:gap-8">
-                <div className="rounded-[1.8rem] border border-white/10 bg-[#081512]/45 p-4 sm:p-6">
-                  <div className="h-full rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
-                    <h2 className="text-2xl font-black sm:text-3xl lg:text-4xl">
-                      شراكة تنفيذية موثوقة
-                    </h2>
-                    <p className="mt-5 text-base leading-8 text-white/75 sm:text-lg">
-                      يُنفّذ مشروع{" "}
-                      <span className="font-bold text-white">قنوات سنا القرآنية</span>{" "}
-                      من قبل{" "}
-                      <span className="font-bold" style={{ color: ACCENT }}>
-                        الشركة السعودية الأردنية للبث الفضائي (جاسكو)
-                      </span>{" "}
-                      – عمّان، الأردن، بخبرة رائدة في مجال الإنتاج والبث الإعلامي.
+          <section id="portfolio" className="py-12 lg:py-20">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.16 }}
+              variants={fadeUp}
+              className="mb-10 text-center"
+            >
+              {sectionBadge(Crown, "أعمالنا")}
+              <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">نماذج من أعمالنا</h2>
+              <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
+                تلاوات قرآنية عطرة وترجمة معاني آيات القرآن الكريم لمختلف لغات
+                العالم - سنا... بلاغ للعالمين.
+              </p>
+            </motion.div>
+
+            <div className="grid gap-5 lg:grid-cols-3">
+              {portfolioVideos.map((video, i) => (
+                <ProtectedHlsVideoCard key={video} video={video} index={i} isMobile={isMobile} />
+              ))}
+            </div>
+          </section>
+
+          <section className="py-12 lg:py-16">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.16 }}
+              variants={fadeUp}
+              className="mb-10 text-center"
+            >
+              {sectionBadge(Globe, "أثر المشروع")}
+              <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">
+                أثر المشروع وانتشاره حول العالم
+              </h2>
+              <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
+                رسالة قرآنية عالمية وفّرت ترجمات موثوقة، وقدّمت تجربة مؤثرة،
+                وساهمت في وصول معاني القرآن الكريم إلى بيوت حول العالم.
+              </p>
+            </motion.div>
+
+            <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
+              {impactCards.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.2 }}
+                  custom={i}
+                  variants={fadeUp}
+                  className="h-full"
+                >
+                  <ImpactCard {...item} isMobile={isMobile} />
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          <section id="partners" className="py-12 lg:py-20">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.16 }}
+              variants={fadeUp}
+              className="mb-10 text-center"
+            >
+              {sectionBadge(Users, "شركاء النجاح")}
+              <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">نجاحٌ صنعه التعاون</h2>
+              <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
+                حقق المشروع نجاحه بفضل تعاون نخبة من الجهات المتميزة، من بينها
+                الجهات الشرعية والإعلامية والإنتاجية والمتطوعون.
+              </p>
+            </motion.div>
+
+            <div className="grid gap-5 md:grid-cols-2">
+              {partners.map((item, i) => (
+                <motion.div
+                  key={item.title}
+                  initial="hidden"
+                  whileInView="show"
+                  viewport={{ once: true, amount: 0.2 }}
+                  custom={i}
+                  variants={fadeUp}
+                  className="h-full"
+                >
+                  <StructuredCard {...item} isMobile={isMobile} />
+                </motion.div>
+              ))}
+            </div>
+          </section>
+
+          <section id="contact" className="py-8 lg:py-12">
+            <motion.div
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true, amount: 0.2 }}
+              variants={fadeUp}
+            >
+              <div className="text-center">
+                <div
+                  className="inline-flex max-w-full items-center gap-3 rounded-full border border-white/10 bg-white/10 px-5 py-3 text-base font-semibold backdrop-blur-md shadow-[0_6px_16px_rgba(0,0,0,0.12)] sm:px-7 sm:py-4 sm:text-lg"
+                  style={{ color: ACCENT }}
+                >
+                  <Sparkles className="h-5 w-5 shrink-0" style={{ color: ACCENT }} />
+                  <span>تواصل معنا</span>
+                </div>
+
+                <p className="mx-auto mt-5 max-w-4xl text-base leading-8 text-white/75 sm:text-lg">
+                  سنا رسالة دعوية عالمية، ويسعدنا التواصل معكم واستقبال
+                  استفساراتكم ومقترحاتكم وشراكاتكم في أي وقت بأسلوب واضح ومباشر.
+                </p>
+              </div>
+
+              <div
+                className={`mt-8 rounded-[2rem] p-4 sm:p-6 md:p-8 ${gradientOuterCard}`}
+              >
+                <div className="rounded-[2rem] border border-white/10 bg-[#081512]/70 p-4 sm:p-6">
+                  <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 sm:p-5">
+                    <div className="mb-4 text-xl font-bold sm:text-2xl">اتصل بنا</div>
+                    <div className="space-y-3 text-white/75">
+                      <div className="rounded-2xl bg-white/5 px-4 py-3 text-sm sm:text-base">
+                        فريقنا سيكون سعيدًا بمساعدتكم والرد عليكم في أقرب وقت.
+                      </div>
+                      <a
+                        href="mailto:snachannel159@gmail.com"
+                        className="flex items-center justify-center gap-3 rounded-2xl border border-emerald-200/20 bg-emerald-400/10 px-4 py-3 text-center text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20 sm:text-base"
+                      >
+                        <Mail className="h-4 w-4" style={{ color: ACCENT }} />
+                        إرسال
+                      </a>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </motion.div>
+          </section>
+
+          <footer className="pb-8 pt-4 sm:pb-10">
+            <div className={`rounded-[2rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10 ${glass}`}>
+              <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr_1fr]">
+                <div
+                  className={`rounded-[1.8rem] border border-white/10 p-4 text-center sm:p-6 ${INNER_GRADIENT}`}
+                >
+                  <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10 shadow-[0_0_18px_rgba(255,255,255,0.06)] backdrop-blur-md sm:h-24 sm:w-24">
+                    <img
+                      src={sanaLogo}
+                      alt="شعار سنا"
+                      className="h-14 w-14 object-contain sm:h-16 sm:w-16"
+                      loading="lazy"
+                      decoding="async"
+                    />
+                  </div>
+
+                  <div className="mt-4">
+                    <span className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs text-white/90 sm:px-5 sm:text-sm">
+                      قنوات سنا القرآنية
+                    </span>
+                  </div>
+
+                  <div className="mt-4 text-2xl font-black sm:text-3xl" style={{ color: ACCENT }}>
+                    سنا... بلاغ للعالمين
+                  </div>
+
+                  <p className="mx-auto mt-4 max-w-xl rounded-[1.4rem] border border-white/10 bg-[rgba(38,67,57,0.55)] px-4 py-4 text-sm leading-7 text-white/78 sm:px-5 sm:text-base sm:leading-8">
+                    قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات
+                    العالمية، في مشروع وقفي يجمع بين جمال العرض ودقة المعنى وروح
+                    الرسالة.
+                  </p>
+                </div>
+
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4 sm:p-5">
+                  <div className="mb-4 flex items-center gap-2 text-base font-bold text-white sm:text-lg">
+                    <MessageCircle className="h-5 w-5" style={{ color: ACCENT }} />
+                    تفاصيلنا
+                  </div>
+
+                  <div className="space-y-4 text-white/72">
+                    <a
+                      href="mailto:snachannel159@gmail.com"
+                      className="flex items-center gap-3 break-all rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm transition hover:bg-white/10 sm:text-base"
+                    >
+                      <Mail className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
+                      snachannel159@gmail.com
+                    </a>
+
+                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm sm:text-base">
+                      <MapPin className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
+                      عمّان - الأردن
+                    </div>
+                  </div>
+
+                  <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
+                    <a
+                      href="https://www.facebook.com/share/1FVbmggbzc/"
+                      target="_blank"
+                      rel="noreferrer"
+                      className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-semibold text-white transition hover:scale-[1.01] hover:bg-white/10"
+                    >
+                      <Globe className="h-4 w-4" style={{ color: ACCENT }} />
+                      تابعنا على فيسبوك
+                    </a>
+
+                    <p className="mt-4 text-center text-sm leading-6 text-white/70">
+                      ابدأ رحلتك القرآنية الآن
                     </p>
                   </div>
                 </div>
 
-                <div className="rounded-[1.8rem] border border-white/10 bg-[#081512]/70 p-4 sm:p-6">
-                  <div className="flex h-full flex-col justify-center rounded-2xl border border-white/10 bg-white/5 p-4 sm:p-5">
-                    <div className="text-sm text-white/60">الموقع الرسمي</div>
-                    <div className="mt-2 text-xl font-bold sm:text-2xl">Jasco Media City</div>
-                    <a
-                      href="https://jascomediacity.net/"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-5 inline-flex w-fit items-center gap-2 rounded-2xl border border-emerald-200/20 bg-emerald-400/10 px-5 py-3 text-sm text-emerald-100 transition hover:bg-emerald-400/20 sm:text-base"
-                    >
-                      قم بزيارة موقع Jasco
-                      <ExternalLink className="h-4 w-4" />
-                    </a>
+                <div className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-4 backdrop-blur-md sm:p-5">
+                  <div className="mb-5 flex items-center gap-2 text-base font-bold text-white sm:text-lg">
+                    <Link2 className="h-5 w-5" style={{ color: ACCENT }} />
+                    روابط تطبيقنا
                   </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </section>
 
-        <section id="features" className="py-12 lg:py-20">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            className="mb-10 text-center"
-          >
-            {sectionBadge(Sparkles, "مميزات المنصة")}
-            <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">
-              سنا... بلاغ للعالمين
-            </h2>
-            <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-              منصة قرآنية تستخدم أحدث الوسائل لإيصال معاني القرآن الكريم إلى
-              العالمين، بأسلوب يجمع بين التأصيل الشرعي والتقنيات الحديثة.
-            </p>
-          </motion.div>
+                  <div className="rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
+                    <p className="mb-4 text-sm leading-7 text-white/65">
+                      حمّل التطبيق وابدأ متابعة المحتوى القرآني بسهولة عبر المنصات
+                      الرسمية.
+                    </p>
 
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {features.map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.25 }}
-                custom={i}
-                variants={fadeUp}
-                className="h-full"
-              >
-                <StructuredCard {...item} />
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        <section className="py-10 lg:py-14">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            className="mb-10 text-center"
-          >
-            {sectionBadge(Send, "وسائل النشر والوصول")}
-            <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">قنوات حضور متعددة</h2>
-          </motion.div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {channels.map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.25 }}
-                custom={i}
-                variants={fadeUp}
-                className="h-full"
-              >
-                <StructuredCard {...item} />
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        <section id="portfolio" className="py-12 lg:py-20">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            className="mb-10 text-center"
-          >
-            {sectionBadge(Crown, "أعمالنا")}
-            <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">نماذج من أعمالنا</h2>
-            <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-              تلاوات قرآنية عطرة وترجمة معاني آيات القرآن الكريم لمختلف لغات
-              العالم - سنا... بلاغ للعالمين.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-5 lg:grid-cols-3">
-            {portfolioVideos.map((video, i) => (
-              <ProtectedHlsVideoCard key={video} video={video} index={i} />
-            ))}
-          </div>
-        </section>
-
-        <section className="py-12 lg:py-16">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            className="mb-10 text-center"
-          >
-            {sectionBadge(Globe, "أثر المشروع")}
-            <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">
-              أثر المشروع وانتشاره حول العالم
-            </h2>
-            <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-              رسالة قرآنية عالمية وفّرت ترجمات موثوقة، وقدّمت تجربة مؤثرة،
-              وساهمت في وصول معاني القرآن الكريم إلى بيوت حول العالم.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-5 md:grid-cols-2 xl:grid-cols-4">
-            {impactCards.map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.25 }}
-                custom={i}
-                variants={fadeUp}
-                className="h-full"
-              >
-                <ImpactCard {...item} />
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        <section id="partners" className="py-12 lg:py-20">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.2 }}
-            variants={fadeUp}
-            className="mb-10 text-center"
-          >
-            {sectionBadge(Users, "شركاء النجاح")}
-            <h2 className="mt-5 text-2xl font-black sm:text-4xl lg:text-5xl">نجاحٌ صنعه التعاون</h2>
-            <p className="mx-auto mt-4 max-w-3xl text-base leading-8 text-white/70 sm:text-lg">
-              حقق المشروع نجاحه بفضل تعاون نخبة من الجهات المتميزة، من بينها
-              الجهات الشرعية والإعلامية والإنتاجية والمتطوعون.
-            </p>
-          </motion.div>
-
-          <div className="grid gap-5 md:grid-cols-2">
-            {partners.map((item, i) => (
-              <motion.div
-                key={item.title}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true, amount: 0.25 }}
-                custom={i}
-                variants={fadeUp}
-                className="h-full"
-              >
-                <StructuredCard {...item} />
-              </motion.div>
-            ))}
-          </div>
-        </section>
-
-        <section id="contact" className="py-8 lg:py-12">
-          <motion.div
-            initial="hidden"
-            whileInView="show"
-            viewport={{ once: true, amount: 0.25 }}
-            variants={fadeUp}
-          >
-            <div className="text-center">
-              <div
-                className="inline-flex max-w-full items-center gap-3 rounded-full border border-white/10 bg-white/10 px-5 py-3 text-base font-semibold backdrop-blur-xl shadow-[0_10px_35px_rgba(0,0,0,0.18)] sm:px-7 sm:py-4 sm:text-lg"
-                style={{ color: ACCENT }}
-              >
-                <Sparkles className="h-5 w-5 shrink-0" style={{ color: ACCENT }} />
-                <span>تواصل معنا</span>
-              </div>
-
-              <p className="mx-auto mt-5 max-w-4xl text-base leading-8 text-white/75 sm:text-lg">
-                سنا رسالة دعوية عالمية، ويسعدنا التواصل معكم واستقبال
-                استفساراتكم ومقترحاتكم وشراكاتكم في أي وقت بأسلوب واضح ومباشر.
-              </p>
-            </div>
-
-            <div
-              className={`mt-8 rounded-[2rem] p-4 sm:p-6 md:p-8 ${gradientOuterCard}`}
-            >
-              <div className="rounded-[2rem] border border-white/10 bg-[#081512]/70 p-4 sm:p-6">
-                <div className="rounded-[1.5rem] border border-white/10 bg-white/5 p-4 sm:p-5">
-                  <div className="mb-4 text-xl font-bold sm:text-2xl">اتصل بنا</div>
-                  <div className="space-y-3 text-white/75">
-                    <div className="rounded-2xl bg-white/5 px-4 py-3 text-sm sm:text-base">
-                      فريقنا سيكون سعيدًا بمساعدتكم والرد عليكم في أقرب وقت.
-                    </div>
-                    <a
-                      href="mailto:snachannel159@gmail.com"
-                      className="flex items-center justify-center gap-3 rounded-2xl border border-emerald-200/20 bg-emerald-400/10 px-4 py-3 text-center text-sm font-semibold text-emerald-100 transition hover:bg-emerald-400/20 sm:text-base"
-                    >
-                      <Mail className="h-4 w-4" style={{ color: ACCENT }} />
-                      إرسال
-                    </a>
-                  </div>
-                </div>
-              </div>
-            </div>
-          </motion.div>
-        </section>
-
-        <footer className="pb-8 pt-4 sm:pb-10">
-          <div className={`rounded-[2rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10 ${glass}`}>
-            <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr_1fr]">
-              <div
-                className={`rounded-[1.8rem] border border-white/10 p-4 text-center sm:p-6 ${INNER_GRADIENT}`}
-              >
-                <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10 shadow-[0_0_30px_rgba(255,255,255,0.08)] backdrop-blur-xl sm:h-24 sm:w-24">
-                  <img
-                    src={sanaLogo}
-                    alt="شعار سنا"
-                    className="h-14 w-14 object-contain sm:h-16 sm:w-16"
-                  />
-                </div>
-
-                <div className="mt-4">
-                  <span className="inline-flex rounded-full border border-white/10 bg-white/10 px-4 py-2 text-xs text-white/90 sm:px-5 sm:text-sm">
-                    قنوات سنا القرآنية
-                  </span>
-                </div>
-
-                <div className="mt-4 text-2xl font-black sm:text-3xl" style={{ color: ACCENT }}>
-                  سنا... بلاغ للعالمين
-                </div>
-
-                <p className="mx-auto mt-4 max-w-xl rounded-[1.4rem] border border-white/10 bg-[rgba(38,67,57,0.55)] px-4 py-4 text-sm leading-7 text-white/78 sm:px-5 sm:text-base sm:leading-8">
-                  قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات
-                  العالمية، في مشروع وقفي يجمع بين جمال العرض ودقة المعنى وروح
-                  الرسالة.
-                </p>
-              </div>
-
-              <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4 sm:p-5">
-                <div className="mb-4 flex items-center gap-2 text-base font-bold text-white sm:text-lg">
-                  <MessageCircle className="h-5 w-5" style={{ color: ACCENT }} />
-                  تفاصيلنا
-                </div>
-
-                <div className="space-y-4 text-white/72">
-                  <a
-                    href="mailto:snachannel159@gmail.com"
-                    className="flex items-center gap-3 break-all rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm transition hover:bg-white/10 sm:text-base"
-                  >
-                    <Mail className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
-                    snachannel159@gmail.com
-                  </a>
-
-                  <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm sm:text-base">
-                    <MapPin className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
-                    عمّان - الأردن
-                  </div>
-                </div>
-
-                <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
-                  <a
-                    href="https://www.facebook.com/share/1FVbmggbzc/"
-                    target="_blank"
-                    rel="noreferrer"
-                    className="flex items-center justify-center gap-2 rounded-xl border border-white/10 bg-white/5 py-3 text-sm font-semibold text-white transition hover:scale-[1.02] hover:bg-white/10"
-                  >
-                    <Globe className="h-4 w-4" style={{ color: ACCENT }} />
-                    تابعنا على فيسبوك
-                  </a>
-
-                  <p className="mt-4 text-center text-sm leading-6 text-white/70">
-                    ابدأ رحلتك القرآنية الآن
-                  </p>
-                </div>
-              </div>
-
-              <div className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-4 backdrop-blur-2xl sm:p-5">
-                <div className="mb-5 flex items-center gap-2 text-base font-bold text-white sm:text-lg">
-                  <Link2 className="h-5 w-5" style={{ color: ACCENT }} />
-                  روابط تطبيقنا
-                </div>
-
-                <div className="rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
-                  <p className="mb-4 text-sm leading-7 text-white/65">
-                    حمّل التطبيق وابدأ متابعة المحتوى القرآني بسهولة عبر المنصات
-                    الرسمية.
-                  </p>
-
-                  <div className="grid gap-3 md:grid-cols-2">
-                    <a
-                      href="https://play.google.com/store/apps/details?id=com.sana_all&pcampaignid=web_share"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-1 hover:bg-white/10"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 text-white">
-                          <GooglePlayIcon />
+                    <div className="grid gap-3 md:grid-cols-2">
+                      <a
+                        href="https://play.google.com/store/apps/details?id=com.sana_all&pcampaignid=web_share"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:bg-white/10"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 text-white">
+                            <GooglePlayIcon />
+                          </div>
+                          <span className="whitespace-nowrap text-sm font-bold text-white sm:text-base">
+                            Google Play
+                          </span>
                         </div>
-                        <span className="whitespace-nowrap text-sm font-bold text-white sm:text-base">
-                          Google Play
-                        </span>
-                      </div>
-                    </a>
+                      </a>
 
-                    <a
-                      href="https://apps.apple.com/us/app/sana-tv-%D8%B3%D9%86%D8%A7/id6742054715"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-1 hover:bg-white/10"
-                    >
-                      <div className="flex items-center justify-between gap-3">
-                        <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 text-white">
-                          <AppStoreIcon />
+                      <a
+                        href="https://apps.apple.com/us/app/sana-tv-%D8%B3%D9%86%D8%A7/id6742054715"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:bg-white/10"
+                      >
+                        <div className="flex items-center justify-between gap-3">
+                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 text-white">
+                            <AppStoreIcon />
+                          </div>
+                          <span className="text-sm font-bold text-white sm:text-base">
+                            App Store
+                          </span>
                         </div>
-                        <span className="text-sm font-bold text-white sm:text-base">
-                          App Store
-                        </span>
-                      </div>
-                    </a>
-                  </div>
-
-                  <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-[#0b1d19]/60 p-4">
-                    <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/65">
-                      <span>⭐ 4.9 تقييم</span>
-                      <span>🌍 100+ دولة</span>
+                      </a>
                     </div>
 
-                    <a
-                      href="https://www.youtube.com/@SAN-AR-m5i"
-                      target="_blank"
-                      rel="noreferrer"
-                      className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200/20 bg-emerald-400/10 py-3 text-sm font-bold text-emerald-100 transition hover:scale-[1.02] hover:bg-emerald-400/20 hover:shadow-[0_0_20px_rgba(16,185,129,0.3)]"
-                    >
-                      <Sparkles className="h-4 w-4" />
-                      ابدأ الآن
-                    </a>
+                    <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-[#0b1d19]/60 p-4">
+                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/65">
+                        <span>⭐ 4.9 تقييم</span>
+                        <span>🌍 100+ دولة</span>
+                      </div>
+
+                      <a
+                        href="https://www.youtube.com/@SAN-AR-m5i"
+                        target="_blank"
+                        rel="noreferrer"
+                        className="mt-4 flex w-full items-center justify-center gap-2 rounded-xl border border-emerald-200/20 bg-emerald-400/10 py-3 text-sm font-bold text-emerald-100 transition hover:scale-[1.01] hover:bg-emerald-400/20"
+                      >
+                        <Sparkles className="h-4 w-4" />
+                        ابدأ الآن
+                      </a>
+                    </div>
                   </div>
                 </div>
               </div>
-            </div>
 
-            <div className="mt-8 border-t border-white/10 pt-5 text-center text-xs text-white/55 sm:text-sm">
-              جميع الحقوق محفوظة © قنوات سنا القرآنية.
+              <div className="mt-8 border-t border-white/10 pt-5 text-center text-xs text-white/55 sm:text-sm">
+                جميع الحقوق محفوظة © قنوات سنا القرآنية.
+              </div>
             </div>
-          </div>
-        </footer>
+          </footer>
+        </div>
       </div>
-    </div>
+    </LazyMotion>
   );
 }
