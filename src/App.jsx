@@ -1619,8 +1619,10 @@ export default function QuranTranslationLandingPage() {
                 </div>
 
                 <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4 sm:p-5 flex flex-col items-center justify-center text-center">
-                  <div className="mb-5 flex flex-col items-center justify-center gap-3 text-lg font-bold text-white sm:text-xl">
-                    <MessageCircle className="h-6 w-6" style={{ color: ACCENT }} />
+                  <div className="mb-5 flex flex-col items-center justify-center gap-4 text-lg font-bold text-white sm:text-xl">
+                    <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
+                      <MessageCircle className="h-6 w-6" style={{ color: ACCENT }} />
+                    </div>
                     <span>تفاصيلنا</span>
                   </div>
 
