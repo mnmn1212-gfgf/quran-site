@@ -1618,28 +1618,28 @@ export default function QuranTranslationLandingPage() {
                   </p>
                 </div>
 
-                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4 sm:p-5">
-                  <div className="mb-4 flex items-center gap-2 text-base font-bold text-white sm:text-lg">
-                    <MessageCircle className="h-5 w-5" style={{ color: ACCENT }} />
-                    تفاصيلنا
+                <div className="rounded-[1.6rem] border border-white/10 bg-white/5 p-4 sm:p-5 flex flex-col items-center justify-center text-center">
+                  <div className="mb-5 flex flex-col items-center justify-center gap-3 text-lg font-bold text-white sm:text-xl">
+                    <MessageCircle className="h-6 w-6" style={{ color: ACCENT }} />
+                    <span>تفاصيلنا</span>
                   </div>
 
-                  <div className="space-y-4 text-white/72">
+                  <div className="w-full space-y-4 text-white/72">
                     <a
                       href="mailto:snachannel159@gmail.com"
-                      className="flex items-center gap-3 break-all rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm transition hover:bg-white/10 sm:text-base"
+                      className="flex items-center justify-center gap-3 break-all rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm transition hover:bg-white/10 sm:text-base"
                     >
                       <Mail className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
                       snachannel159@gmail.com
                     </a>
 
-                    <div className="flex items-center gap-3 rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm sm:text-base">
+                    <div className="flex items-center justify-center gap-3 rounded-2xl border border-white/10 bg-[#081512]/50 px-4 py-3 text-sm sm:text-base">
                       <MapPin className="h-4 w-4 shrink-0" style={{ color: ACCENT }} />
                       عمّان - الأردن
                     </div>
                   </div>
 
-                  <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
+                  <div className="mt-6 w-full rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
                     <a
                       href="https://www.facebook.com/share/1FVbmggbzc/"
                       target="_blank"
@@ -1656,13 +1656,13 @@ export default function QuranTranslationLandingPage() {
                   </div>
                 </div>
 
-                <div className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-4 backdrop-blur-md sm:p-5">
-                  <div className="mb-5 flex items-center gap-2 text-base font-bold text-white sm:text-lg">
-                    <Link2 className="h-5 w-5" style={{ color: ACCENT }} />
-                    روابط تطبيقنا
+                <div className="rounded-[1.8rem] border border-white/10 bg-[linear-gradient(145deg,rgba(255,255,255,0.08),rgba(255,255,255,0.04))] p-4 backdrop-blur-md sm:p-5 flex flex-col items-center justify-center text-center">
+                  <div className="mb-5 flex flex-col items-center justify-center gap-3 text-lg font-bold text-white sm:text-xl">
+                    <Link2 className="h-6 w-6" style={{ color: ACCENT }} />
+                    <span>روابط تطبيقنا</span>
                   </div>
 
-                  <div className="rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
+                  <div className="w-full rounded-[1.4rem] border border-white/10 bg-[#081512]/45 p-4">
                     <p className="mb-4 text-sm leading-7 text-white/65">
                       حمّل التطبيق وابدأ متابعة المحتوى القرآني بسهولة عبر المنصات
                       الرسمية.
@@ -1675,8 +1675,8 @@ export default function QuranTranslationLandingPage() {
                         rel="noreferrer"
                         className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:bg-white/10"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 text-white">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 text-white">
                             <GooglePlayIcon />
                           </div>
                           <span className="whitespace-nowrap text-sm font-bold text-white sm:text-base">
@@ -1691,8 +1691,8 @@ export default function QuranTranslationLandingPage() {
                         rel="noreferrer"
                         className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:bg-white/10"
                       >
-                        <div className="flex items-center justify-between gap-3">
-                          <div className="flex h-11 w-11 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 text-white">
+                        <div className="flex flex-col items-center justify-center gap-3">
+                          <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 text-white">
                             <AppStoreIcon />
                           </div>
                           <span className="text-sm font-bold text-white sm:text-base">
@@ -1703,7 +1703,7 @@ export default function QuranTranslationLandingPage() {
                     </div>
 
                     <div className="mt-5 rounded-[1.4rem] border border-white/10 bg-[#0b1d19]/60 p-4">
-                      <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-white/65">
+                      <div className="flex flex-wrap items-center justify-center gap-4 text-xs text-white/65">
                         <span>⭐ 4.9 تقييم</span>
                         <span>🌍 100+ دولة</span>
                       </div>
