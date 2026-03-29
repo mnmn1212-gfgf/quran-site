@@ -1589,7 +1589,7 @@ export default function QuranTranslationLandingPage() {
             <div className={`rounded-[2rem] px-4 py-6 sm:px-6 sm:py-8 lg:px-10 ${glass}`}>
               <div className="grid gap-6 lg:grid-cols-[1.2fr_0.8fr_1fr]">
                 <div
-                  className={`rounded-[1.8rem] border border-white/10 p-4 text-center sm:p-6 ${INNER_GRADIENT}`}
+                  className={`rounded-[1.8rem] border border-white/10 p-4 text-center sm:p-6 ${INNER_GRADIENT} flex h-full flex-col items-center justify-center`}
                 >
                   <div className="mx-auto flex h-20 w-20 items-center justify-center rounded-full border border-white/15 bg-white/10 shadow-[0_0_18px_rgba(255,255,255,0.06)] backdrop-blur-md sm:h-24 sm:w-24">
                     <img
@@ -1611,7 +1611,7 @@ export default function QuranTranslationLandingPage() {
                     سنا... بلاغ للعالمين
                   </div>
 
-                  <p className="mx-auto mt-4 max-w-xl rounded-[1.4rem] border border-white/10 bg-[rgba(38,67,57,0.55)] px-4 py-4 text-sm leading-7 text-white/78 sm:px-5 sm:text-base sm:leading-8">
+                  <p className="mx-auto mt-4 max-w-[30rem] rounded-[1.4rem] border border-white/10 bg-[rgba(38,67,57,0.55)] px-4 py-4 text-sm leading-7 text-white/78 sm:px-5 sm:text-base sm:leading-8">
                     قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات
                     العالمية، في مشروع وقفي يجمع بين جمال العرض ودقة المعنى وروح
                     الرسالة.
@@ -1675,7 +1675,7 @@ export default function QuranTranslationLandingPage() {
                         rel="noreferrer"
                         className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:bg-white/10"
                       >
-                        <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="flex items-center justify-center gap-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-emerald-300/10 text-white">
                             <GooglePlayIcon />
                           </div>
@@ -1691,7 +1691,7 @@ export default function QuranTranslationLandingPage() {
                         rel="noreferrer"
                         className="group rounded-[1.3rem] border border-white/10 bg-white/5 p-4 transition hover:-translate-y-0.5 hover:bg-white/10"
                       >
-                        <div className="flex flex-col items-center justify-center gap-3">
+                        <div className="flex items-center justify-center gap-3">
                           <div className="flex h-12 w-12 items-center justify-center rounded-2xl border border-white/10 bg-yellow-100/10 text-white">
                             <AppStoreIcon />
                           </div>
