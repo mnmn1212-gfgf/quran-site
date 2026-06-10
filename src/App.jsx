@@ -35,13 +35,20 @@ import {
   Volume2,
 } from "lucide-react";
 
-const ACCENT = "#D8B66A";
-const CTA_DARK = "#3B0715";
+const ACCENT = "#EBCB7A";
+const CTA_DARK = "#062820";
 
 const ARABIC_LUXURY_GRADIENT =
-  "bg-[linear-gradient(135deg,rgba(2,48,42,0.96)_0%,rgba(75,9,34,0.94)_52%,rgba(151,107,35,0.92)_100%)]";
+  "bg-[linear-gradient(135deg,rgba(3,31,29,0.96)_0%,rgba(7,70,60,0.92)_48%,rgba(174,128,52,0.84)_100%)]";
 const OUTER_GRADIENT = ARABIC_LUXURY_GRADIENT;
-const INNER_GRADIENT = ARABIC_LUXURY_GRADIENT;
+const INNER_GRADIENT =
+  "bg-[linear-gradient(145deg,rgba(3,31,29,0.96)_0%,rgba(7,70,60,0.92)_48%,rgba(174,128,52,0.84)_100%)]";
+const BACKGROUND_GRADIENT =
+  "bg-[radial-gradient(circle_at_16%_8%,rgba(235,203,122,0.14),transparent_25%),radial-gradient(circle_at_84%_18%,rgba(13,111,92,0.20),transparent_30%),radial-gradient(circle_at_45%_90%,rgba(174,128,52,0.10),transparent_32%),linear-gradient(180deg,#020908_0%,#041815_45%,#07110F_100%)]";
+const LINE_GRADIENT =
+  "bg-[linear-gradient(90deg,rgba(116,213,187,0.95)_0%,rgba(255,241,198,0.98)_52%,rgba(235,203,122,0.95)_100%)]";
+const TEXT_GRADIENT =
+  "bg-[linear-gradient(90deg,#FFF4CA_0%,#EBCB7A_42%,#8FE3C6_100%)]";
 
 const fadeUp = {
   hidden: { opacity: 0, y: 20 },
@@ -61,9 +68,11 @@ const pulseGlow = {
 const containerClass =
   "relative z-10 mx-auto w-full max-w-[1680px] px-4 sm:px-6 lg:px-10 xl:px-14";
 const glass =
-  `border border-white/10 ${OUTER_GRADIENT} md:backdrop-blur-xl backdrop-blur-sm shadow-[0_12px_30px_rgba(0,0,0,0.22)]`;
-const softCard = `rounded-[2rem] ${glass}`;
-const gradientOuterCard = `rounded-[2rem] border border-white/10 ${OUTER_GRADIENT} md:backdrop-blur-xl backdrop-blur-sm shadow-[0_8px_22px_rgba(0,0,0,0.14)]`;
+  "border border-white/10 bg-white/[0.075] md:backdrop-blur-xl backdrop-blur-sm shadow-[0_12px_30px_rgba(0,0,0,0.20)]";
+const frameShell =
+  `border border-white/10 ${OUTER_GRADIENT} md:backdrop-blur-xl backdrop-blur-sm shadow-[0_16px_36px_rgba(0,0,0,0.24)]`;
+const softCard = `rounded-[2rem] ${frameShell}`;
+const gradientOuterCard = `rounded-[2rem] ${frameShell}`;
 
 const navItems = [
   { label: "من نحن", href: "#about" },
@@ -566,7 +575,7 @@ function HeroAudioPlayer({ isMobile }) {
             key={index}
             animate={{ height }}
             transition={{ duration: isMobile ? 0.2 : 0.14, ease: "easeOut" }}
-            className={`flex-1 self-end rounded-full ${OUTER_GRADIENT} opacity-95`}
+            className={`flex-1 self-end rounded-full ${LINE_GRADIENT} opacity-95`}
             style={{ maxHeight: `${MAX_BAR_HEIGHT}px` }}
           />
         ))}
@@ -631,7 +640,7 @@ function HeroAudioPlayer({ isMobile }) {
 
         <div className="relative h-2 w-full flex-1 overflow-visible rounded-full bg-white/10">
           <div
-            className={`absolute inset-y-0 right-0 rounded-full ${OUTER_GRADIENT}`}
+            className={`absolute inset-y-0 right-0 rounded-full ${LINE_GRADIENT}`}
             style={{ width: `${progress}%` }}
           />
           <input
@@ -893,7 +902,7 @@ function ProtectedHlsVideoCard({
             className="absolute inset-0 flex items-center justify-center bg-black/15 transition hover:bg-black/10"
             aria-label="تشغيل الفيديو"
           >
-            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-[0_0_22px_rgba(216,182,106,0.16)] sm:h-18 sm:w-18">
+            <span className="flex h-16 w-16 items-center justify-center rounded-full border border-white/20 bg-white/10 backdrop-blur-md shadow-[0_0_22px_rgba(235,203,122,0.16)] sm:h-18 sm:w-18">
               <Play className="mr-1 h-7 w-7 text-white" />
             </span>
           </button>
@@ -946,7 +955,7 @@ function ProtectedHlsVideoCard({
 
           <div className="relative h-2 w-full flex-1 overflow-visible rounded-full bg-white/10">
             <div
-              className={`absolute inset-y-0 right-0 rounded-full ${OUTER_GRADIENT}`}
+              className={`absolute inset-y-0 right-0 rounded-full ${LINE_GRADIENT}`}
               style={{ width: `${progress}%` }}
             />
             <input
@@ -1015,12 +1024,12 @@ export default function QuranTranslationLandingPage() {
         dir="rtl"
         className="relative min-h-screen overflow-hidden bg-transparent text-white"
       >
-        <div className={`absolute inset-0 ${OUTER_GRADIENT}`} />
+        <div className={`absolute inset-0 ${BACKGROUND_GRADIENT}`} />
 
         {!isMobile && (
           <>
             <motion.div
-              className="absolute -top-24 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[rgba(216,182,106,0.16)] blur-3xl"
+              className="absolute -top-24 left-1/2 h-96 w-96 -translate-x-1/2 rounded-full bg-[rgba(235,203,122,0.16)] blur-3xl"
               animate={pulseGlow}
             />
             <div className="absolute inset-0 opacity-[0.06]">
@@ -1038,7 +1047,7 @@ export default function QuranTranslationLandingPage() {
               className={`mx-auto flex items-center justify-between gap-3 rounded-[1.5rem] px-3 py-3 sm:rounded-[2rem] sm:px-4 ${glass}`}
             >
               <div className="flex min-w-0 items-center gap-3 sm:gap-4">
-                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-yellow-100/20 bg-white/10 shadow-[0_0_16px_rgba(216,182,106,0.16)] sm:h-16 sm:w-16">
+                <div className="flex h-12 w-12 shrink-0 items-center justify-center overflow-hidden rounded-full border border-yellow-100/20 bg-white/10 shadow-[0_0_16px_rgba(235,203,122,0.16)] sm:h-16 sm:w-16">
                   <img
                     src={sanaLogo}
                     alt="شعار قنوات سنا القرآنية"
@@ -1112,7 +1121,7 @@ export default function QuranTranslationLandingPage() {
                 variants={fadeUp}
                 className="text-3xl font-black leading-[1.25] sm:text-5xl lg:text-7xl"
               >
-                <span className={`block ${OUTER_GRADIENT} bg-clip-text text-transparent`}>
+                <span className={`block ${TEXT_GRADIENT} bg-clip-text text-transparent`}>
                   قنوات سنا القرآنية
                 </span>
               </motion.h1>
@@ -1233,7 +1242,7 @@ export default function QuranTranslationLandingPage() {
                               repeat: Infinity,
                               ease: "easeInOut",
                             }}
-                            className={`h-3 rounded-full ${OUTER_GRADIENT}`}
+                            className={`h-3 rounded-full ${LINE_GRADIENT}`}
                           />
                         ))}
                       </div>
@@ -1333,7 +1342,7 @@ export default function QuranTranslationLandingPage() {
               className={`relative overflow-hidden p-5 sm:p-6 md:p-10 ${gradientOuterCard}`}
             >
               {!isMobile && (
-                <div className={`absolute inset-0 ${OUTER_GRADIENT} opacity-40`} />
+                <div className="absolute inset-0 bg-[radial-gradient(circle_at_25%_25%,rgba(235,203,122,0.12),transparent_30%),radial-gradient(circle_at_80%_78%,rgba(116,213,187,0.11),transparent_34%)]" />
               )}
 
               <div className="relative z-10">
@@ -1611,7 +1620,7 @@ export default function QuranTranslationLandingPage() {
                     سنا... بلاغ للعالمين
                   </div>
 
-                  <p className="mx-auto mt-4 max-w-[30rem] rounded-[1.4rem] border border-white/10 bg-[rgba(38,67,57,0.55)] px-4 py-4 text-sm leading-7 text-white/78 sm:px-5 sm:text-base sm:leading-8">
+                  <p className="mx-auto mt-4 max-w-[30rem] rounded-[1.4rem] border border-white/10 bg-[rgba(7,37,32,0.58)] px-4 py-4 text-sm leading-7 text-white/78 sm:px-5 sm:text-base sm:leading-8">
                     قنوات صوتية مرئية لترجمات معاني القرآن الكريم لجميع اللغات
                     العالمية، في مشروع وقفي يجمع بين جمال العرض ودقة المعنى وروح
                     الرسالة.
@@ -1658,7 +1667,7 @@ export default function QuranTranslationLandingPage() {
                   </div>
                 </div>
 
-                <div className={`rounded-[1.8rem] border border-white/10 ${OUTER_GRADIENT} p-4 backdrop-blur-md sm:p-5 flex flex-col items-center justify-center text-center`}>
+                <div className={`rounded-[1.8rem] border border-white/10 ${INNER_GRADIENT} p-4 backdrop-blur-md sm:p-5 flex flex-col items-center justify-center text-center`}>
                   <div className="mb-5 flex flex-col items-center justify-center gap-4 text-lg font-bold text-white sm:text-xl">
                     <div className="flex h-14 w-14 items-center justify-center rounded-2xl border border-white/10 bg-white/5 shadow-[0_8px_18px_rgba(0,0,0,0.14)]">
                       <Link2 className="h-6 w-6" style={{ color: ACCENT }} />
